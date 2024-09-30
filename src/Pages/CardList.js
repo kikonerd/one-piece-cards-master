@@ -4,6 +4,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckSquare } from '@fortawesome/free-solid-svg-icons'; 
 import { db, auth } from '../firebase'; 
 import { collection, addDoc } from 'firebase/firestore'; 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function CardList() {
   const [cards, setCards] = useState([]);
@@ -12,6 +15,8 @@ function CardList() {
   const [selectedCards, setSelectedCards] = useState(new Map());
   const [currentPage, setCurrentPage] = useState(1); 
   const cardsPerPage = 36; 
+
+  
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -65,11 +70,14 @@ function CardList() {
     });
   };
 
+  
+
   const handleAddCards = async () => {
     const userId = auth.currentUser.uid;
     const selectedEntries = [...selectedCards.entries()];
-
+  
     try {
+      toast.info("A adicionar cartas..."); // Notificação ao iniciar a adição
       for (const [cardId, quantity] of selectedEntries) {
         for (let i = 0; i < quantity; i++) {
           await addDoc(collection(db, "cartas"), {
@@ -80,15 +88,19 @@ function CardList() {
           });
         }
       }
+      toast.success("Cartas adicionadas com sucesso!"); // Notificação de sucesso
       console.log("Cartas adicionadas com sucesso!");
       setSelectedCards(new Map());
     } catch (error) {
       console.error("Erro ao adicionar cartas:", error);
+      toast.error("Erro ao adicionar cartas."); // Notificação de erro
     }
   };
+  
 
   return (
     <div>
+      <ToastContainer /> {/* Adicione isso para permitir que as notificações apareçam */}
       <input
         type="text"
         placeholder="Filtrar cartas..."
@@ -169,5 +181,7 @@ function CardList() {
     </div>
   );
 }
+
+
 
 export default CardList;

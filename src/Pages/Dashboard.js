@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase'; 
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'; 
+import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'; 
+import { toast, ToastContainer } from 'react-toastify'; // Importando Toast
+import 'react-toastify/dist/ReactToastify.css'; // Importando CSS do Toast
 
 function Dashboard({ userId }) {
   const [userCards, setUserCards] = useState([]);
@@ -57,6 +59,7 @@ function Dashboard({ userId }) {
 
   const handleRemoveCards = async () => {
     try {
+      toast.info("A remover cartas..."); // Notificação ao iniciar a remoção
       for (const card of currentCards) {
         const quantityToRemove = cardQuantities[card.cardId] || 0;
 
@@ -82,13 +85,16 @@ function Dashboard({ userId }) {
       }
 
       setCardQuantities({}); // Reseta as quantidades após remover
+      toast.success("Cartas removidas com sucesso!"); // Notificação de sucesso
     } catch (error) {
       console.error("Erro ao remover cartas:", error);
+      
     }
   };
 
   return (
     <div>
+      <ToastContainer /> {/* Adicionando o ToastContainer aqui */}
       <input
         type="text"
         placeholder="Filtrar cartas..."

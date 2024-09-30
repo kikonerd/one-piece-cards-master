@@ -1,11 +1,13 @@
-// CardList.js
 import React, { useEffect, useState } from 'react';
 import '../Styles/CardList.css'; // Importe o arquivo de estilo
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckSquare } from '@fortawesome/free-solid-svg-icons'; // Importa o ícone de check
 
 function CardList() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCardsIds, setSelectedCardsIds] = useState(new Set()); // Usar um Set para gerenciar seleções
   const [currentPage, setCurrentPage] = useState(1); // Página atual
   const cardsPerPage = 36; // Número de cartas por página
 
@@ -18,8 +20,6 @@ function CardList() {
         }
         const data = await response.json();
 
-        console.log("Dados retornados da API:", data);
-
         if (data && data.data && Array.isArray(data.data)) {
           const formattedCards = data.data.map((card) => ({
             id: card[0],
@@ -28,8 +28,6 @@ function CardList() {
           }));
 
           setCards(formattedCards);
-        } else {
-          console.error("Os dados retornados não são válidos:", data);
         }
       } catch (error) {
         console.error("Erro ao buscar as cartas da API:", error);
@@ -41,34 +39,47 @@ function CardList() {
     fetchCards();
   }, []);
 
+  // Filtra as cartas de acordo com o texto de busca
   const filteredCards = cards.filter(card => 
     card.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Calcular as cartas a serem exibidas na página atual
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
   const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard);
-  const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
 
+  // Mudar de página
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
+  // Função para alternar a seleção de uma carta
+  const toggleSelectCard = (id) => {
+    setSelectedCardsIds(prev => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(id)) {
+        newSelection.delete(id); // Remove se já estiver selecionada
+      } else {
+        newSelection.add(id); // Adiciona se não estiver selecionada
+      }
+      return newSelection;
+    });
+  };
+
   return (
     <div>
-      <div className="filter-container">
-        <input
-          type="text"
-          placeholder="Filtrar cartas..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1); // Reseta a página para 1 ao aplicar um filtro
-          }}
-          className="filter-input"
-        />
-      </div>
-      
+      <input
+        type="text"
+        placeholder="Filtrar cartas..."
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(1); // Reseta a página para 1 ao aplicar um filtro
+        }}
+        className="filter-input"
+      />
+
       {loading ? (
         <p>A carregar cartas...</p>
       ) : (
@@ -77,7 +88,17 @@ function CardList() {
             <p>Nenhuma carta encontrada.</p>
           ) : (
             currentCards.map((card) => (
-              <div className="card-item" key={card.id}>
+              <div 
+                className={`card-item ${selectedCardsIds.has(card.id) ? 'selected' : ''}`} 
+                key={card.id}
+                onClick={() => toggleSelectCard(card.id)} // Adiciona evento de clique
+                style={{ position: 'relative' }} // Para posicionar o quadrado de seleção
+              >
+                <div className="select-box">
+                  {selectedCardsIds.has(card.id) && (
+                    <FontAwesomeIcon icon={faCheckSquare} style={{ color: 'green' }} />
+                  )}
+                </div>
                 <img 
                   src={`https://static.dotgg.gg/onepiece/card/${card.id_normal}.webp`} 
                   alt={card.name} 
@@ -89,15 +110,9 @@ function CardList() {
           )}
         </div>
       )}
-
-      {/* Botão para adicionar cartas */}
-      <div style={{ textAlign: 'center', margin: '20px 0' }}>
-        <button onClick={() => console.log('Adicionar cartas')} className="button">Adicionar Cartas</button>
-      </div>
-
       {/* Controle de Paginação */}
       <div className="pagination">
-        {Array.from({ length: totalPages }, (_, index) => (
+        {Array.from({ length: Math.ceil(filteredCards.length / cardsPerPage) }, (_, index) => (
           <button 
             key={index + 1} 
             onClick={() => handlePageChange(index + 1)}

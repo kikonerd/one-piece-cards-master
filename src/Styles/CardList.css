@@ -128,3 +128,38 @@ button:hover {
   color: black; /* Cor do texto */
   width: 300px; /* Ajuste a largura conforme necessário */
 }
+
+
+
+.card-item {
+  background-color: #ffffff; /* Cor de fundo das cartas */
+  border: 1px solid #ccc; /* Borda das cartas */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 150px; /* Largura fixa das cartas */
+  text-align: center;
+  padding: 10px;
+  margin: 10px;
+  transition: transform 0.2s; /* Efeito de transição para transformação */
+  position: relative; /* Para que a posição absoluta funcione no select-box */
+}
+
+.card-item.selected {
+  border-color: green; /* Borda verde quando a carta está selecionada */
+  background-color: rgba(144, 238, 144, 0.3); /* Fundo destacado */
+}
+
+.select-box {
+  position: absolute; /* Para posicionar o quadrado no canto superior da carta */
+  top: 10px;
+  left: 10px;
+  width: 20px;
+  height: 20px;
+  background-color: white; /* Cor de fundo do quadrado */
+  border: 2px solid transparent; /* Inicialmente transparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px; /* Bordas arredondadas */
+  transition: border-color 0.3s; /* Efeito de transição */
+}

@@ -1,8 +1,8 @@
 // LandingPage.js
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore'; // Importe as funções do Firestore
 import React, { useState } from 'react';
 import { auth, db } from '../firebase'; // Importe o Firebase
-import { doc, setDoc } from 'firebase/firestore'; // Importe as funções do Firestore
 
 const LandingPage = () => {
   const [nickname, setNickname] = useState('');
@@ -30,10 +30,10 @@ const LandingPage = () => {
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <h1>Bem-vindo, Capitão!</h1>
-      <p>Crie um nickname para acessar suas cartas.</p>
+      <p>Cria um nickname para veres as tuas cartas.</p>
       <input 
         type="text" 
-        placeholder="Digite seu nickname" 
+        placeholder="Digita o teu nickname" 
         value={nickname}
         onChange={(e) => setNickname(e.target.value)} // Atualiza o nickname
         style={{ margin: '10px', padding: '10px' }}

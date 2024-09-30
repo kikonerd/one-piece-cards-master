@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import '../Styles/CardList.css'; 
+import { faCheckSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckSquare } from '@fortawesome/free-solid-svg-icons'; 
-import { db, auth } from '../firebase'; 
-import { collection, addDoc } from 'firebase/firestore'; 
+import { addDoc, collection } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { auth, db } from '../firebase';
+import '../Styles/CardList.css';
 
 
 function CardList() {
@@ -32,6 +32,7 @@ function CardList() {
             id: card[0],
             id_normal: card[1],
             name: card[4] || 'Nome não disponível',
+            price: card[16] || '??'
           }));
 
           setCards(formattedCards);
@@ -137,11 +138,12 @@ function CardList() {
                   )}
                 </div>
                 <img 
-                  src={`https://static.dotgg.gg/onepiece/card/${card.id_normal}.webp`} 
+                  src={`https://static.dotgg.gg/onepiece/card/${card.id}.webp`} 
                   alt={card.name} 
                 />
                 <h2>{card.name}</h2>
-                <p>ID: {card.id_normal}</p>
+                <p style={{color: 'green', fontWeight: 900}}>{card.price}€</p>
+                <p>ID: {card.id}</p>
                 {selectedCards.has(card.id) && (
                   <input 
                     type="number" 

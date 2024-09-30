@@ -20,7 +20,7 @@ function NavBar({ setShowDashboard, onLogout }) {
       {menuOpen && (
         <div className="dropdown-menu">
           <button onClick={() => handleNavigation('cardList')}>Lista de Cartas</button>
-          <button onClick={() => handleNavigation('dashboard')}>Dashboard</button>
+          <button onClick={() => handleNavigation('dashboard')}>O meu Deck</button>
           <button onClick={() => handleNavigation('friends')}>Amigos</button>
           <button onClick={onLogout}>Logout</button>
         </div>

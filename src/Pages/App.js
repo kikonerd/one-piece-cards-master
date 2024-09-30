@@ -1,16 +1,17 @@
 // App.js
+import { doc, getDoc } from 'firebase/firestore'; // Importa as funções do Firestore
 import React, { useEffect, useState } from 'react';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import CardList from './CardList';
 import Dashboard from './Dashboard';
+import FriendsList from './FriendsList';
 import LandingPage from './LandingPage';
 import NavBar from './NavBar';
-import { db } from '../firebase'; // Importe o db
-import { doc, getDoc } from 'firebase/firestore'; // Importa as funções do Firestore
 
 function App() {
   const [user, setUser] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showFriendsList, setShowFriendsList] = useState(false);
   const [nickname, setNickname] = useState(''); // Estado para armazenar o nickname
 
   useEffect(() => {
@@ -38,17 +39,18 @@ function App() {
   const handleLogout = () => {
     auth.signOut(); // Faz o logout do usuário
     setShowDashboard(false); // Reseta o estado para mostrar a página de login
+    setShowFriendsList(false); // Reseta o estado para mostrar a página de login
   };
 
   return (
     <div className="App">
       {user ? (
         <>
-          <NavBar setShowDashboard={setShowDashboard} onLogout={handleLogout} />
-          <div className="welcome-message">
-            Bem-vindo, {nickname}
+          <NavBar setShowDashboard={setShowDashboard} setShowFriendsList={setShowFriendsList} onLogout={handleLogout} />
+          <div className="welcome-message" style={{marginLeft: '43px'}}>
+            <p style={{color: 'white', WebkitTextStrokeColor: 'black', WebkitTextStrokeWidth: '1.2px', fontSize: '30px', marginBottom: '5px'}}>Bem-vindo, {nickname}</p>
           </div>
-          {showDashboard ? <Dashboard userId={user.uid} /> : <CardList />}
+          {showFriendsList ? <FriendsList userId={user.uid} /> : showDashboard ? <Dashboard userId={user.uid} /> : <CardList />}
         </>
       ) : (
         <LandingPage />

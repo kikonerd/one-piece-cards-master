@@ -98,7 +98,6 @@ button:hover {
   background-color: #0056b3;
 }
 
-
 .filter-container {
   display: flex;
   justify-content: flex-end; /* Alinha o filtro à direita */
@@ -107,6 +106,7 @@ button:hover {
 
 .filter-input {
   padding: 10px;
+  margin-left: 43px;
   border: 1px solid #ccc; /* Borda do filtro */
   border-radius: 5px;
   font-weight: bold; /* Texto em negrito */
@@ -128,8 +128,6 @@ button:hover {
   color: black; /* Cor do texto */
   width: 300px; /* Ajuste a largura conforme necessário */
 }
-
-
 
 .card-item {
   background-color: #ffffff; /* Cor de fundo das cartas */
@@ -163,7 +161,6 @@ button:hover {
   border-radius: 4px; /* Bordas arredondadas */
   transition: border-color 0.3s; /* Efeito de transição */
 }
-
 
 .add-cards-button {
   background-color: #007bff; /* Cor do botão */

@@ -89,7 +89,6 @@ body {
   background-color: #28a745; 
 }
 
-
 .welcome-message {
   position: absolute; /* Para posicionamento em relação ao seu container pai */
   top: 10px; /* Distância do topo */
@@ -103,7 +102,6 @@ body {
   font-weight: bold; /* Texto em negrito */
   text-align: center; /* Centraliza o texto na caixa */
 }
-
 
 .filter-input {
   margin-bottom: 20px;

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import '../Styles/NavBar.css'; // Certifique-se de que o arquivo CSS esteja atualizado
 
-function NavBar({ setShowDashboard, onLogout }) {
+function NavBar({ setShowDashboard, setShowFriendsList,  onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -12,6 +12,7 @@ function NavBar({ setShowDashboard, onLogout }) {
   const handleNavigation = (page) => {
     setMenuOpen(false); // Fecha o menu ao navegar
     setShowDashboard(page === 'dashboard'); // Define se deve mostrar o Dashboard
+    setShowFriendsList(page === 'friendsList'); // Define se deve mostrar o Dashboard
   };
 
   return (
@@ -21,7 +22,7 @@ function NavBar({ setShowDashboard, onLogout }) {
         <div className="dropdown-menu">
           <button onClick={() => handleNavigation('cardList')}>Lista de Cartas</button>
           <button onClick={() => handleNavigation('dashboard')}>O meu Deck</button>
-          <button onClick={() => handleNavigation('friends')}>Amigos</button>
+          <button onClick={() => handleNavigation('friendsList')}>Amigos</button>
           <button onClick={onLogout}>Logout</button>
         </div>
       )}

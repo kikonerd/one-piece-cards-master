@@ -71,8 +71,6 @@ function CardList() {
     });
   };
 
-  
-
   const handleAddCards = async () => {
     const userId = auth.currentUser.uid;
     const selectedEntries = [...selectedCards.entries()];
@@ -142,7 +140,7 @@ function CardList() {
                   alt={card.name} 
                 />
                 <h2>{card.name}</h2>
-                <p style={{color: 'green', fontWeight: 900}}>{card.price}€</p>
+                <p style={{color: 'green', fontWeight: 900}}>{card.price !== "??" ? Number(card.price).toFixed(2) : card.price}€</p>
                 <p>ID: {card.id}</p>
                 {selectedCards.has(card.id) && (
                   <input 

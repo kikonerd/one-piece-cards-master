@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase'; 
-import { collection, query, where, getDocs } from 'firebase/firestore'; 
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'; 
 
 function Dashboard({ userId }) {
   const [userCards, setUserCards] = useState([]);
@@ -8,6 +8,7 @@ function Dashboard({ userId }) {
   const [searchTerm, setSearchTerm] = useState('');
   const cardsPerPage = 36; 
   const [currentPage, setCurrentPage] = useState(1); 
+  const [cardQuantities, setCardQuantities] = useState({}); // Estado para armazenar quantidades
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -40,12 +41,10 @@ function Dashboard({ userId }) {
   }, []);
 
   // Filtra as cartas de acordo com o texto de busca
-// Filtra as cartas de acordo com o texto de busca
-const filteredCards = groupedCards.filter(card => 
-  card.cardId.toLowerCase().includes(searchTerm.toLowerCase()) || // Filtra por ID
-  card.name.toLowerCase().includes(searchTerm.toLowerCase()) // Filtra por nome
-);
-
+  const filteredCards = groupedCards.filter(card => 
+    card.cardId.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    card.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Calcular as cartas a serem exibidas na página atual
   const indexOfLastCard = currentPage * cardsPerPage;
@@ -54,6 +53,38 @@ const filteredCards = groupedCards.filter(card =>
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleRemoveCards = async () => {
+    try {
+      for (const card of currentCards) {
+        const quantityToRemove = cardQuantities[card.cardId] || 0;
+
+        // Verifica se a quantidade a remover é maior que 0
+        if (quantityToRemove > 0) {
+          const querySnapshot = await getDocs(query(collection(db, "cartas"), where("userId", "==", userId), where("cardId", "==", card.cardId)));
+          
+          // Remover a quantidade especificada de cartas
+          for (const doc of querySnapshot.docs) {
+            if (quantityToRemove > 0) {
+              await deleteDoc(doc.ref); // Remove a carta do Firestore
+              quantityToRemove--; // Decrementa a quantidade a remover
+            }
+          }
+
+          // Atualiza o estado local para refletir as alterações
+          card.quantity -= (cardQuantities[card.cardId] || 0); // Atualiza a quantidade local
+          if (card.quantity <= 0) {
+            // Se a quantidade for 0 ou menor, remove a carta da lista
+            setUserCards(prev => prev.filter(item => item.cardId !== card.cardId));
+          }
+        }
+      }
+
+      setCardQuantities({}); // Reseta as quantidades após remover
+    } catch (error) {
+      console.error("Erro ao remover cartas:", error);
+    }
   };
 
   return (
@@ -87,11 +118,26 @@ const filteredCards = groupedCards.filter(card =>
                 <div className="quantity-badge">
                   {card.quantity} {/* Mostra a quantidade da carta */}
                 </div>
+                <input 
+                  type="number" 
+                  min="0" 
+                  max={card.quantity} 
+                  value={cardQuantities[card.cardId] || 0} 
+                  onChange={(e) => setCardQuantities({ 
+                    ...cardQuantities, 
+                    [card.cardId]: Number(e.target.value) 
+                  })} 
+                  placeholder="Quantidade a remover"
+                />
               </div>
             ))
           )}
         </div>
       )}
+
+      <button onClick={handleRemoveCards} className="remove-cards-button" disabled={Object.keys(cardQuantities).length === 0}>
+        Remover Cartas Selecionadas
+      </button>
 
       <div className="pagination">
         {Array.from({ length: Math.ceil(filteredCards.length / cardsPerPage) }, (_, index) => (

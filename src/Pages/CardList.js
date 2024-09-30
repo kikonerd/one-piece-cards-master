@@ -67,6 +67,12 @@ function CardList() {
     });
   };
 
+  // Função para adicionar cartas selecionadas (lógica que você pode implementar)
+  const handleAddCards = () => {
+    console.log("Cartas adicionadas:", [...selectedCardsIds]);
+    // Aqui você pode adicionar a lógica para salvar as cartas selecionadas na base de dados
+  };
+
   return (
     <div>
       <input
@@ -110,6 +116,10 @@ function CardList() {
           )}
         </div>
       )}
+
+      {/* Botão Adicionar Cartas */}
+      <button onClick={handleAddCards} className="add-cards-button">Adicionar Cartas</button>
+
       {/* Controle de Paginação */}
       <div className="pagination">
         {Array.from({ length: Math.ceil(filteredCards.length / cardsPerPage) }, (_, index) => (

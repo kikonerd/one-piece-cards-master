@@ -163,3 +163,21 @@ button:hover {
   border-radius: 4px; /* Bordas arredondadas */
   transition: border-color 0.3s; /* Efeito de transição */
 }
+
+
+.add-cards-button {
+  background-color: #007bff; /* Cor do botão */
+  color: white; /* Cor do texto */
+  border: none; /* Remove a borda */
+  border-radius: 5px; /* Bordas arredondadas */
+  padding: 10px 15px; /* Preenchimento interno */
+  cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+  margin: 20px 0; /* Margem superior e inferior */
+  display: block; /* Para centralizar */
+  margin-left: auto; /* Para alinhar à esquerda */
+  margin-right: auto; /* Para alinhar à direita */
+}
+
+.add-cards-button:hover {
+  background-color: #0056b3; /* Cor do botão ao passar o mouse */
+}

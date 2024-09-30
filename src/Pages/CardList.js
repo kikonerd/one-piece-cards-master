@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import '../Styles/CardList.css'; // Importe o arquivo de estilo
+import '../Styles/CardList.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckSquare } from '@fortawesome/free-solid-svg-icons'; // Importa o ícone de check
-import { db, auth } from '../firebase'; // Importe o db e o auth do arquivo firebase.js
-import { collection, addDoc } from 'firebase/firestore'; // Importe as funções necessárias do Firestore
+import { faCheckSquare } from '@fortawesome/free-solid-svg-icons'; 
+import { db, auth } from '../firebase'; 
+import { collection, addDoc } from 'firebase/firestore'; 
 
 function CardList() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCardsIds, setSelectedCardsIds] = useState(new Set()); // Usar um Set para gerenciar seleções
-  const [currentPage, setCurrentPage] = useState(1); // Página atual
-  const cardsPerPage = 36; // Número de cartas por página
+  const [selectedCards, setSelectedCards] = useState(new Map());
+  const [currentPage, setCurrentPage] = useState(1); 
+  const cardsPerPage = 36; 
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -41,59 +41,51 @@ function CardList() {
     fetchCards();
   }, []);
 
-  // Filtra as cartas de acordo com o texto de busca
   const filteredCards = cards.filter(card => 
     card.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Calcular as cartas a serem exibidas na página atual
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
   const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard);
 
-  // Mudar de página
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  // Função para alternar a seleção de uma carta
   const toggleSelectCard = (id) => {
-    setSelectedCardsIds(prev => {
-      const newSelection = new Set(prev);
+    setSelectedCards(prev => {
+      const newSelection = new Map(prev);
       if (newSelection.has(id)) {
-        newSelection.delete(id); // Remove se já estiver selecionada
+        newSelection.delete(id);
       } else {
-        newSelection.add(id); // Adiciona se não estiver selecionada
+        newSelection.set(id, 1); // Adiciona com contagem 1 se não estiver selecionada
       }
       return newSelection;
     });
   };
 
-  // Função para adicionar cartas selecionadas à Firestore
   const handleAddCards = async () => {
-    const userId = auth.currentUser.uid; // Captura o ID do usuário logado
-    const selectedCards = [...selectedCardsIds];
+    const userId = auth.currentUser.uid;
+    const selectedEntries = [...selectedCards.entries()];
 
     try {
-        for (const cardId of selectedCards) {
-            // Encontre o nome da carta correspondente ao cardId
-            const cardToAdd = cards.find(card => card.id === cardId);
-            const cardName = cardToAdd ? cardToAdd.name : 'Nome não disponível'; // Use 'Nome não disponível' se não encontrar
-
-            await addDoc(collection(db, "cartas"), {
-                userId: userId,
-                cardId: cardId,
-                cardName: cardName, // Adiciona o nome da carta
-                timestamp: new Date() // Para registrar a data da adição
-            });
+      for (const [cardId, quantity] of selectedEntries) {
+        for (let i = 0; i < quantity; i++) {
+          await addDoc(collection(db, "cartas"), {
+            userId: userId,
+            cardId: cardId,
+            name: cards.find(card => card.id === cardId).name,
+            timestamp: new Date()
+          });
         }
-        console.log("Cartas adicionadas com sucesso!");
-        // Você pode resetar a seleção após adicionar
-        setSelectedCardsIds(new Set());
+      }
+      console.log("Cartas adicionadas com sucesso!");
+      setSelectedCards(new Map());
     } catch (error) {
-        console.error("Erro ao adicionar cartas:", error);
+      console.error("Erro ao adicionar cartas:", error);
     }
-};
+  };
 
   return (
     <div>
@@ -103,7 +95,7 @@ function CardList() {
         value={searchTerm}
         onChange={(e) => {
           setSearchTerm(e.target.value);
-          setCurrentPage(1); // Reseta a página para 1 ao aplicar um filtro
+          setCurrentPage(1);
         }}
         className="filter-input"
       />
@@ -117,13 +109,18 @@ function CardList() {
           ) : (
             currentCards.map((card) => (
               <div 
-                className={`card-item ${selectedCardsIds.has(card.id) ? 'selected' : ''}`} 
+                className={`card-item ${selectedCards.has(card.id) ? 'selected' : ''}`} 
                 key={card.id}
-                onClick={() => toggleSelectCard(card.id)} // Adiciona evento de clique
-                style={{ position: 'relative' }} // Para posicionar o quadrado de seleção
+                onClick={(e) => {
+                  // Evitar que a seleção do card desmarque o campo de entrada
+                  if (e.target.tagName !== 'INPUT') {
+                    toggleSelectCard(card.id);
+                  }
+                }} 
+                style={{ position: 'relative' }} 
               >
                 <div className="select-box">
-                  {selectedCardsIds.has(card.id) && (
+                  {selectedCards.has(card.id) && (
                     <FontAwesomeIcon icon={faCheckSquare} style={{ color: 'green' }} />
                   )}
                 </div>
@@ -133,23 +130,37 @@ function CardList() {
                 />
                 <h2>{card.name}</h2>
                 <p>ID: {card.id_normal}</p>
+                {selectedCards.has(card.id) && (
+                  <input 
+                    type="number" 
+                    min="1" 
+                    value={selectedCards.get(card.id)} 
+                    onChange={(e) => {
+                      const quantity = parseInt(e.target.value) || 1;
+                      setSelectedCards(prev => {
+                        const newSelection = new Map(prev);
+                        newSelection.set(card.id, quantity);
+                        return newSelection;
+                      });
+                    }} 
+                    onClick={(e) => e.stopPropagation()} // Impede que o click no input desmarque o card
+                  />
+                )}
               </div>
             ))
           )}
         </div>
       )}
 
-      {/* Botão Adicionar Cartas */}
       <button onClick={handleAddCards} className="add-cards-button">Adicionar Cartas</button>
 
-      {/* Controle de Paginação */}
       <div className="pagination">
         {Array.from({ length: Math.ceil(filteredCards.length / cardsPerPage) }, (_, index) => (
           <button 
             key={index + 1} 
             onClick={() => handlePageChange(index + 1)}
-            className={currentPage === index + 1 ? 'active' : ''} // Adiciona a classe 'active' se for a página atual
-            disabled={currentPage === index + 1} // Desabilita o botão da página atual
+            className={currentPage === index + 1 ? 'active' : ''} 
+            disabled={currentPage === index + 1} 
           >
             {index + 1}
           </button>

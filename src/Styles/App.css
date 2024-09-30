@@ -136,3 +136,18 @@ body {
 .pagination .active {
   background-color: #28a745; /* Cor do botão ativo */
 }
+
+.quantity-badge {
+  position: absolute;
+  bottom: 5px; 
+  right: 5px;  
+  background-color: red; 
+  color: white; 
+  border-radius: 50%; 
+  width: 20px; 
+  height: 20px; 
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  font-size: 12px; 
+}

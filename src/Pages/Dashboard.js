@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase'; 
 import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'; 
-import { toast, ToastContainer } from 'react-toastify'; // Importando Toast
-import 'react-toastify/dist/ReactToastify.css'; // Importando CSS do Toast
+import { toast, ToastContainer } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css'; 
 
 function Dashboard({ userId }) {
   const [userCards, setUserCards] = useState([]);
@@ -13,23 +13,23 @@ function Dashboard({ userId }) {
   const [cardQuantities, setCardQuantities] = useState({}); // Estado para armazenar quantidades
 
   useEffect(() => {
-    const fetchCards = async () => {
-      try {
-        const q = query(collection(db, "cartas"), where("userId", "==", userId));
-        const querySnapshot = await getDocs(q);
-        const fetchedCards = querySnapshot.docs.map(doc => doc.data());
-        setUserCards(fetchedCards);
-      } catch (error) {
-        console.error("Erro ao buscar as cartas do usuário:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (userId) {
-      fetchCards();
+      fetchCards(); // Chama a função ao montar o componente
     }
   }, [userId]);
+
+  const fetchCards = async () => {
+    try {
+      const q = query(collection(db, "cartas"), where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
+      const fetchedCards = querySnapshot.docs.map(doc => doc.data());
+      setUserCards(fetchedCards);
+    } catch (error) {
+      console.error("Erro ao buscar as cartas do usuário:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Agrupar cartas por cardId e contar o número de cópias
   const groupedCards = userCards.reduce((acc, card) => {
@@ -60,23 +60,25 @@ function Dashboard({ userId }) {
   const handleRemoveCards = async () => {
     try {
       toast.info("A remover cartas..."); // Notificação ao iniciar a remoção
+
       for (const card of currentCards) {
         const quantityToRemove = cardQuantities[card.cardId] || 0;
 
         // Verifica se a quantidade a remover é maior que 0
         if (quantityToRemove > 0) {
           const querySnapshot = await getDocs(query(collection(db, "cartas"), where("userId", "==", userId), where("cardId", "==", card.cardId)));
-          
+
           // Remover a quantidade especificada de cartas
+          let removalCount = quantityToRemove; // Contador de remoções
           for (const doc of querySnapshot.docs) {
-            if (quantityToRemove > 0) {
+            if (removalCount > 0) {
               await deleteDoc(doc.ref); // Remove a carta do Firestore
-              quantityToRemove--; // Decrementa a quantidade a remover
+              removalCount--; // Decrementa a quantidade a remover
             }
           }
 
-          // Atualiza o estado local para refletir as alterações
-          card.quantity -= (cardQuantities[card.cardId] || 0); // Atualiza a quantidade local
+          // Atualiza a quantidade local
+          card.quantity -= quantityToRemove; // Atualiza a quantidade local
           if (card.quantity <= 0) {
             // Se a quantidade for 0 ou menor, remove a carta da lista
             setUserCards(prev => prev.filter(item => item.cardId !== card.cardId));
@@ -86,15 +88,20 @@ function Dashboard({ userId }) {
 
       setCardQuantities({}); // Reseta as quantidades após remover
       toast.success("Cartas removidas com sucesso!"); // Notificação de sucesso
+
+      // Atualiza a lista de cartas após 3 segundos
+      setTimeout(() => {
+        fetchCards(); // Recarrega as cartas
+      }, 3000);
+      
     } catch (error) {
       console.error("Erro ao remover cartas:", error);
-      
     }
   };
 
   return (
     <div>
-      <ToastContainer /> {/* Adicionando o ToastContainer aqui */}
+      <ToastContainer />
       <input
         type="text"
         placeholder="Filtrar cartas..."

@@ -1,0 +1,130 @@
+body {
+  background-image: url('~/background.jpg'); /* Caminho para a sua imagem */
+  background-size: cover; /* Faz a imagem cobrir toda a tela */
+  background-position: center; /* Centraliza a imagem */
+  background-repeat: no-repeat; /* Não repete a imagem */
+  background-attachment: fixed; /* Mantém a imagem fixa */
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+
+.card-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.card-item {
+  background-color: #ffffff; /* Cor de fundo das cartas */
+  border: 1px solid #ccc; /* Borda das cartas */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 150px; /* Largura fixa das cartas */
+  text-align: center;
+  padding: 10px;
+  margin: 10px;
+  transition: transform 0.2s;
+  overflow: hidden; /* Impede que o conteúdo transborde */
+  display: flex; /* Adiciona flexbox para centralizar conteúdo */
+  flex-direction: column; /* Direção em coluna */
+  justify-content: space-between; /* Espaco entre o conteúdo */
+}
+
+.card-item:hover {
+  transform: scale(1.05);
+}
+
+.card-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px 10px 0 0;
+}
+
+.card-item h2 {
+  font-size: 14px; /* Tamanho da fonte para o nome */
+  margin: 5px 0; /* Margem para separar o título da ID */
+  overflow: hidden; /* Impede que o texto transborde */
+  text-overflow: ellipsis; /* Adiciona "..." se o texto for longo */
+  white-space: nowrap; /* Impede que o texto quebre em várias linhas */
+}
+
+.card-item p {
+  font-size: 12px; /* Tamanho da fonte para o ID */
+  margin: 5px 0; /* Margem para separar o ID do restante */
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  background-color: black; /* Altera a cor de fundo para preto */
+  color: white; /* Mantém o texto em branco */
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  margin: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.pagination button:hover {
+  background-color: #333; /* Altera a cor ao passar o mouse */
+}
+
+.pagination .active {
+  background-color: #28a745; /* Cor do botão ativo */
+  color: white; /* Mantém o texto em branco para o botão ativo */
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  margin: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+
+.filter-container {
+  display: flex;
+  justify-content: flex-end; /* Alinha o filtro à direita */
+  margin-bottom: 20px; /* Adiciona espaço abaixo do filtro */
+}
+
+.filter-input {
+  padding: 10px;
+  border: 1px solid #ccc; /* Borda do filtro */
+  border-radius: 5px;
+  font-weight: bold; /* Texto em negrito */
+  color: black; /* Cor do texto */
+  width: 300px; /* Ajuste a largura conforme necessário */
+}
+
+.filter-container {
+  display: flex;
+  justify-content: flex-start; /* Alinha o filtro à esquerda */
+  margin-bottom: 20px; /* Adiciona espaço abaixo do filtro */
+}
+
+.filter-input {
+  padding: 10px;
+  border: 1px solid #ccc; /* Borda do filtro */
+  border-radius: 5px;
+  font-weight: bold; /* Texto em negrito */
+  color: black; /* Cor do texto */
+  width: 300px; /* Ajuste a largura conforme necessário */
+}

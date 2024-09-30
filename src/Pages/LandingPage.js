@@ -1,14 +1,27 @@
+// LandingPage.js
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import React from 'react';
-import { auth } from '../firebase';
+import React, { useState } from 'react';
+import { auth, db } from '../firebase'; // Importe o Firebase
+import { doc, setDoc } from 'firebase/firestore'; // Importe as funções do Firestore
 
 const LandingPage = () => {
+  const [nickname, setNickname] = useState('');
+
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      // Redirecionar ou atualizar o estado após login
-      console.log("Usuário logado com sucesso!");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Salvar o nickname no Firestore
+      if (nickname) {
+        await setDoc(doc(db, 'users', user.uid), {
+          email: user.email,
+          nickname: nickname,
+        });
+      }
+
+      console.log("Usuário logado com sucesso!", user);
     } catch (error) {
       console.error("Erro ao fazer login com Google:", error);
     }
@@ -17,12 +30,16 @@ const LandingPage = () => {
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <h1>Bem-vindo, Capitão!</h1>
-      <p>Cria uma conta ou faz login para acessar as tuas cartas.</p>
+      <p>Crie um nickname para acessar suas cartas.</p>
+      <input 
+        type="text" 
+        placeholder="Digite seu nickname" 
+        value={nickname}
+        onChange={(e) => setNickname(e.target.value)} // Atualiza o nickname
+        style={{ margin: '10px', padding: '10px' }}
+      />
       <button onClick={handleGoogleLogin} style={{ margin: '10px', padding: '10px' }}>
         Login com Google
-      </button>
-      <button style={{ margin: '10px', padding: '10px' }}>
-        Login com Email
       </button>
     </div>
   );

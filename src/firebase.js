@@ -1,9 +1,10 @@
+// firebase.js
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
- apiKey: "AIzaSyB58yXawQrBmS1vDEYaLZhaqXV3O-AaGq8",
+  apiKey: "AIzaSyB58yXawQrBmS1vDEYaLZhaqXV3O-AaGq8",
   authDomain: "one-piece-cards-70035.firebaseapp.com",
   projectId: "one-piece-cards-70035",
   storageBucket: "one-piece-cards-70035.appspot.com",
@@ -12,7 +13,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);  // Configura o auth
-const db = getFirestore(app);  // Configura o Firestore
+const auth = getAuth(app); // Configura o auth
+const db = getFirestore(app); // Configura o Firestore
 
 export { auth, db };

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import '../Styles/CardList.css'; // Importe o arquivo de estilo
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckSquare } from '@fortawesome/free-solid-svg-icons'; // Importa o ícone de check
+import { db, auth } from '../firebase'; // Importe o db e o auth do arquivo firebase.js
+import { collection, addDoc } from 'firebase/firestore'; // Importe as funções necessárias do Firestore
 
 function CardList() {
   const [cards, setCards] = useState([]);
@@ -67,11 +69,31 @@ function CardList() {
     });
   };
 
-  // Função para adicionar cartas selecionadas (lógica que você pode implementar)
-  const handleAddCards = () => {
-    console.log("Cartas adicionadas:", [...selectedCardsIds]);
-    // Aqui você pode adicionar a lógica para salvar as cartas selecionadas na base de dados
-  };
+  // Função para adicionar cartas selecionadas à Firestore
+  const handleAddCards = async () => {
+    const userId = auth.currentUser.uid; // Captura o ID do usuário logado
+    const selectedCards = [...selectedCardsIds];
+
+    try {
+        for (const cardId of selectedCards) {
+            // Encontre o nome da carta correspondente ao cardId
+            const cardToAdd = cards.find(card => card.id === cardId);
+            const cardName = cardToAdd ? cardToAdd.name : 'Nome não disponível'; // Use 'Nome não disponível' se não encontrar
+
+            await addDoc(collection(db, "cartas"), {
+                userId: userId,
+                cardId: cardId,
+                cardName: cardName, // Adiciona o nome da carta
+                timestamp: new Date() // Para registrar a data da adição
+            });
+        }
+        console.log("Cartas adicionadas com sucesso!");
+        // Você pode resetar a seleção após adicionar
+        setSelectedCardsIds(new Set());
+    } catch (error) {
+        console.error("Erro ao adicionar cartas:", error);
+    }
+};
 
   return (
     <div>

@@ -1,9 +1,12 @@
 // App.js
-import { doc, getDoc } from 'firebase/firestore'; // Importa as funções do Firestore
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'; // Importa as funções do Firestore
 import React, { useEffect, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import CardList from './CardList';
 import Dashboard from './Dashboard';
+import Deck from './Deck';
 import FriendsList from './FriendsList';
 import LandingPage from './LandingPage';
 import NavBar from './NavBar';
@@ -18,18 +21,42 @@ function App() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
       if (user) {
-        // Busca o nickname do Firestore quando o usuário faz login
-        const fetchNickname = async () => {
-          const userDoc = await getDoc(doc(db, "users", user.uid)); // Pega o ID do usuário logado
+        const fetchUserDetails = async () => {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
-            setNickname(userDoc.data().nickname); // Armazena o nickname
+            setNickname(userDoc.data().nickname);
+            setShowDashboard(false);
           } else {
-            console.log("Nenhum documento encontrado para esse usuário");
+            let nicknameInput = prompt("Insira seu nickname:");
+            if (nicknameInput && nicknameInput.trim().length >= 3) {
+              const q = query(collection(db, "users"), where("nickname", "==", nicknameInput));
+              const nicknameSnapshot = await getDocs(q);
+              if (nicknameSnapshot.empty) {
+                await setDoc(doc(db, "users", user.uid), {
+                  email: user.email,
+                  nickname: nicknameInput,
+                });
+                setNickname(nicknameInput);
+                setShowDashboard(true);
+              } else {
+                alert("Este nickname já está em uso. Por favor, escolha outro.");
+                await auth.signOut();
+                setUser(null);
+                setNickname('');
+                setShowDashboard(false);
+              }
+            } else {
+              alert("O nickname deve ter pelo menos 3 caracteres e não pode ser vazio.");
+              await auth.signOut();
+              setUser(null);
+              setNickname('');
+              setShowDashboard(false);
+            }
           }
         };
-        fetchNickname();
+        fetchUserDetails();
       } else {
-        setNickname(''); // Reseta o nickname se não houver usuário logado
+        setNickname('');
       }
     });
 
@@ -42,18 +69,34 @@ function App() {
     setShowFriendsList(false); // Reseta o estado para mostrar a página de login
   };
 
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Erro ao fazer login com Google:", error);
+    }
+  };
+
   return (
     <div className="App">
-      {user ? (
-        <>
-          <NavBar setShowDashboard={setShowDashboard} setShowFriendsList={setShowFriendsList} onLogout={handleLogout} />
-          <div className="welcome-message" style={{marginLeft: '43px'}}>
-            <p style={{color: 'white', WebkitTextStrokeColor: 'black', WebkitTextStrokeWidth: '1.2px', fontSize: '30px', marginBottom: '5px'}}>Bem-vindo, {nickname}</p>
-          </div>
-          {showFriendsList ? <FriendsList userId={user.uid} /> : showDashboard ? <Dashboard userId={user.uid} /> : <CardList />}
-        </>
+      {!user ? (
+        <LandingPage onLogin={handleGoogleLogin} />
       ) : (
-        <LandingPage />
+        <>
+          <NavBar 
+            setShowDashboard={setShowDashboard} 
+            setShowFriendsList={setShowFriendsList} 
+            onLogout={handleLogout} 
+          />
+          <div className="welcome-message">
+            Bem-vindo, {nickname}
+          </div>
+          <Routes>
+            <Route path="/deck/:friendId" element={<Deck />} />
+            <Route path="/" element={showFriendsList ? <FriendsList userId={user.uid} /> : showDashboard ? <Dashboard userId={user.uid} /> : <CardList />} />
+          </Routes>
+        </>
       )}
     </div>
   );

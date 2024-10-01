@@ -7,16 +7,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import { auth, db } from '../firebase';
 import '../Styles/CardList.css';
 
-
 function CardList() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCards, setSelectedCards] = useState(new Map());
-  const [currentPage, setCurrentPage] = useState(1); 
-  const cardsPerPage = 36; 
-
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const cardsPerPage = 36;
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -47,17 +44,14 @@ function CardList() {
     fetchCards();
   }, []);
 
-  const filteredCards = cards.filter(card => 
-    card.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCards = cards.filter(card =>
+    card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    card.id.includes(searchTerm) // Inclui filtro por ID
   );
 
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard); // Sem ordenação
 
   const toggleSelectCard = (id) => {
     setSelectedCards(prev => {
@@ -74,7 +68,7 @@ function CardList() {
   const handleAddCards = async () => {
     const userId = auth.currentUser.uid;
     const selectedEntries = [...selectedCards.entries()];
-  
+
     try {
       toast.info("A adicionar cartas..."); // Notificação ao iniciar a adição
       for (const [cardId, quantity] of selectedEntries) {
@@ -95,7 +89,6 @@ function CardList() {
       toast.error("Erro ao adicionar cartas."); // Notificação de erro
     }
   };
-  
 
   return (
     <div>
@@ -110,6 +103,7 @@ function CardList() {
         }}
         className="filter-input"
       />
+  
 
       {loading ? (
         <p>A carregar cartas...</p>
@@ -119,34 +113,34 @@ function CardList() {
             <p>Nenhuma carta encontrada.</p>
           ) : (
             currentCards.map((card) => (
-              <div 
-                className={`card-item ${selectedCards.has(card.id) ? 'selected' : ''}`} 
+              <div
+                className={`card-item ${selectedCards.has(card.id) ? 'selected' : ''}`}
                 key={card.id}
                 onClick={(e) => {
                   // Evitar que a seleção do card desmarque o campo de entrada
                   if (e.target.tagName !== 'INPUT') {
                     toggleSelectCard(card.id);
                   }
-                }} 
-                style={{ position: 'relative' }} 
+                }}
+                style={{ position: 'relative' }}
               >
                 <div className="select-box">
                   {selectedCards.has(card.id) && (
                     <FontAwesomeIcon icon={faCheckSquare} style={{ color: 'green' }} />
                   )}
                 </div>
-                <img 
-                  src={`https://static.dotgg.gg/onepiece/card/${card.id}.webp`} 
-                  alt={card.name} 
+                <img
+                  src={`https://static.dotgg.gg/onepiece/card/${card.id}.webp`}
+                  alt={card.name}
                 />
                 <h2>{card.name}</h2>
-                <p style={{color: 'green', fontWeight: 900}}>{card.price !== "??" ? Number(card.price).toFixed(2) : card.price}€</p>
+                <p style={{ color: 'green', fontWeight: 900 }}>{card.price !== "??" ? Number(card.price).toFixed(2) : card.price}€</p>
                 <p>ID: {card.id}</p>
                 {selectedCards.has(card.id) && (
-                  <input 
-                    type="number" 
-                    min="1" 
-                    value={selectedCards.get(card.id)} 
+                  <input
+                    type="number"
+                    min="1"
+                    value={selectedCards.get(card.id)}
                     onChange={(e) => {
                       const quantity = parseInt(e.target.value) || 1;
                       setSelectedCards(prev => {
@@ -154,7 +148,7 @@ function CardList() {
                         newSelection.set(card.id, quantity);
                         return newSelection;
                       });
-                    }} 
+                    }}
                     onClick={(e) => e.stopPropagation()} // Impede que o click no input desmarque o card
                   />
                 )}
@@ -168,11 +162,11 @@ function CardList() {
 
       <div className="pagination">
         {Array.from({ length: Math.ceil(filteredCards.length / cardsPerPage) }, (_, index) => (
-          <button 
-            key={index + 1} 
-            onClick={() => handlePageChange(index + 1)}
-            className={currentPage === index + 1 ? 'active' : ''} 
-            disabled={currentPage === index + 1} 
+          <button
+            key={index + 1}
+            onClick={() => setCurrentPage(index + 1)}
+            className={currentPage === index + 1 ? 'active' : ''}
+            disabled={currentPage === index + 1}
           >
             {index + 1}
           </button>
@@ -181,7 +175,5 @@ function CardList() {
     </div>
   );
 }
-
-
 
 export default CardList;

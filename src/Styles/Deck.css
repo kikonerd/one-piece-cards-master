@@ -1,0 +1,157 @@
+/* Deck.css */
+
+/* Estilo geral do container do deck */
+.deck-container {
+    padding: 20px;
+    background-color: #f8f9fa; /* Cor de fundo clara */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Estilo dos títulos */
+  .deck-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  /* Estilo para o campo de busca */
+  .filter-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+  }
+  
+  /* Estilo para a lista de cartas */
+  .card-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Espaçamento entre os cards */
+  }
+  
+  /* Estilo para cada card */
+  .card-item {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    width: 150px; /* Largura do card */
+    transition: transform 0.2s; /* Animação ao passar o mouse */
+  }
+  
+  /* Efeito ao passar o mouse sobre o card */
+  .card-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Estilo para o nome da carta */
+  .card-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  
+  /* Estilo para o ID da carta */
+  .card-id {
+    font-size: 14px;
+    color: #6c757d;
+  }
+  
+  /* Estilo para a quantidade */
+  .card-quantity {
+    margin-top: 10px;
+  }
+  
+  /* Botão para remover cartas selecionadas */
+  .remove-cards-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #dc3545; /* Cor de fundo vermelha */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  /* Efeito ao passar o mouse sobre o botão */
+  .remove-cards-button:hover {
+    background-color: #c82333; /* Cor mais escura ao passar o mouse */
+  }
+  
+  /* Estilo para a seção de cartas removidas */
+  .removed-cards {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px dashed #dc3545; /* Borda pontilhada */
+    background-color: #fff3f3; /* Fundo levemente vermelho */
+  }
+  
+
+
+
+/* src/Styles/Deck.css */
+.deck-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* Alinhar à esquerda */
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px;
+  width: 150px; /* Defina uma largura fixa */
+  text-align: center;
+}
+
+
+/* src/Styles/Deck.css */
+.filter-input {
+  margin: 20px 0;
+  padding: 10px;
+  width: 100%; /* Ajuste a largura do campo de filtragem */
+  max-width: 400px; /* Defina uma largura máxima se necessário */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+
+button {
+  padding: 10px 15px;
+  margin: 10px 0;
+  background-color: #007bff; /* Cor de fundo azul */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3; /* Cor ao passar o mouse */
+}
+
+
+.sort-options {
+  background-color: #007bff; /* Cor de fundo azul */
+  padding: 10px;
+  border-radius: 5px;
+  position: absolute; /* Pode ser ajustado conforme a necessidade */
+  z-index: 1000; /* Colocar acima de outros elementos */
+}
+
+.sort-options button {
+  display: block;
+  margin: 5px 0; /* Espaçamento entre botões */
+}
+
+
+.selected {
+  background-color: blue; /* ou qualquer cor que você prefira */
+  color: white; /* cor do texto */
+  border: 2px solid darkblue; /* borda para diferenciar */
+}

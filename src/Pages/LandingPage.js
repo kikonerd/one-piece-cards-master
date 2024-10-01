@@ -30,14 +30,6 @@ const LandingPage = () => {
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <h1>Bem-vindo, Capitão!</h1>
-      <p>Cria um nickname para veres as tuas cartas.</p>
-      <input 
-        type="text" 
-        placeholder="Digita o teu nickname" 
-        value={nickname}
-        onChange={(e) => setNickname(e.target.value)} // Atualiza o nickname
-        style={{ margin: '10px', padding: '10px' }}
-      />
       <button onClick={handleGoogleLogin} style={{ margin: '10px', padding: '10px' }}>
         Login com Google
       </button>

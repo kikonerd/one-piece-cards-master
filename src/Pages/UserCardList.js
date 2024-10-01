@@ -1,22 +1,46 @@
-import { collection, deleteDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, getDocs, limit, query, updateDoc, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { db } from '../firebase';
 
 function UserCardList({ userId }) {
+  const [cards, setCards] = useState([]);
   const [userCards, setUserCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const cardsPerPage = 36; 
-  const [currentPage, setCurrentPage] = useState(1); 
-  const [cardQuantities, setCardQuantities] = useState({}); // Estado para armazenar quantidades
 
   useEffect(() => {
     if (userId) {
-      fetchCards(); // Chama a função ao montar o componente
+      fetchAllCards();
+      fetchCards(); 
     }
   }, [userId]);
+  
+  const fetchAllCards = async () => {
+    try {
+      const response = await fetch("/cgfw/getcards?game=onepiece&mode=indexed");
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
+      }
+      const data = await response.json();
+
+      if (data && data.data && Array.isArray(data.data)) {
+        const formattedCards = data.data.map((card) => ({
+          id: card[0],
+          id_normal: card[1],
+          name: card[4] || 'Nome não disponível',
+          price: card[16] || '??'
+        }));
+
+        setCards(formattedCards);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar as cartas da API:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchCards = async () => {
     try {
@@ -31,62 +55,34 @@ function UserCardList({ userId }) {
     }
   };
 
-  // Agrupar cartas por cardId e contar o número de cópias
-  const groupedCards = userCards.reduce((acc, card) => {
-    const existingCard = acc.find(item => item.cardId === card.cardId);
-    if (existingCard) {
-      existingCard.quantity += 1; // Incrementa a quantidade
-    } else {
-      acc.push({ ...card, quantity: 1 }); // Adiciona nova carta com quantidade 1
-    }
-    return acc;
-  }, []);
-
-  // Filtra as cartas de acordo com o texto de busca
-  const filteredCards = groupedCards.filter(card => 
-    card.cardId.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    card.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Calcular as cartas a serem exibidas na página atual
-  const indexOfLastCard = currentPage * cardsPerPage;
-  const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleRemoveCards = async () => {
+  const handleUpdateCards = async () => {
     try {
-      toast.info("A remover cartas..."); // Notificação ao iniciar a remoção
+      toast.info("A atualizar cartas..."); // Notificação ao iniciar a remoção
 
-      for (const card of currentCards) {
-        const quantityToRemove = cardQuantities[card.cardId] || 0;
+      for (const card of userCards) {
+        const q = query(
+          collection(db, 'userCards'),
+          where('userId', '==', userId),
+          where('cardId', '==', card.cardId),
+          limit(1)
+        );
 
-        // Verifica se a quantidade a remover é maior que 0
-        if (quantityToRemove > 0) {
-          const querySnapshot = await getDocs(query(collection(db, "cartas"), where("userId", "==", userId), where("cardId", "==", card.cardId)));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {        
+          const doc = querySnapshot.docs[0];  // Get the first document
+          const cardDocRef = doc.ref;
 
-          // Remover a quantidade especificada de cartas
-          let removalCount = quantityToRemove; // Contador de remoções
-          for (const doc of querySnapshot.docs) {
-            if (removalCount > 0) {
-              await deleteDoc(doc.ref); // Remove a carta do Firestore
-              removalCount--; // Decrementa a quantidade a remover
-            }
-          }
-
-          // Atualiza a quantidade local
-          card.quantity -= quantityToRemove; // Atualiza a quantidade local
-          if (card.quantity <= 0) {
-            // Se a quantidade for 0 ou menor, remove a carta da lista
-            setUserCards(prev => prev.filter(item => item.cardId !== card.cardId));
+          if (card.count === 0) {
+            await deleteDoc(cardDocRef); 
+          } else {
+            await updateDoc(cardDocRef, {
+              count: card.count,
+            });
           }
         }
       }
 
-      setCardQuantities({}); // Reseta as quantidades após remover
       toast.success("Cartas removidas com sucesso!"); // Notificação de sucesso
 
       // Atualiza a lista de cartas após 3 segundos
@@ -108,7 +104,6 @@ function UserCardList({ userId }) {
         value={searchTerm}
         onChange={(e) => {
           setSearchTerm(e.target.value);
-          setCurrentPage(1);
         }}
         className="filter-input"
       />
@@ -117,53 +112,85 @@ function UserCardList({ userId }) {
         <p>A carregar cartas...</p>
       ) : (
         <div className="card-list">
-          {currentCards.length === 0 ? (
+          {userCards.length === 0 ? (
             <p>Nenhuma carta adicionada.</p>
           ) : (
-            currentCards.map((card, index) => (
-              <div className="card-item" key={index}>
+            userCards.map((card) => (
+              <div className="card-item" key={card.cardId}>
                 <img
                   src={`https://static.dotgg.gg/onepiece/card/${card.cardId}.webp`}
                   alt={`Carta ${card.cardId}`} 
                 />
-                <h2>{card.name || 'Nome não disponível'}</h2>
+                <h2>{cards.find((c) => c.id === card.cardId)?.name || 'Nome não disponível'}</h2>
+                <p style={{ color: 'blue', fontWeight: 900 }}>
+                  {cards.find((c) => c.id === card.cardId)?.price !== "??" ? Number(cards.find((c) => c.id === card.cardId)?.price).toFixed(2) : card.price}€
+                </p>
                 <p>ID: {card.cardId}</p>
-                <div className="quantity-badge">
-                  {card.quantity} {/* Mostra a quantidade da carta */}
-                </div>
-                <input 
-                  type="number" 
-                  min="0" 
-                  max={card.quantity} 
-                  value={cardQuantities[card.cardId] || 0} 
-                  onChange={(e) => setCardQuantities({ 
-                    ...cardQuantities, 
-                    [card.cardId]: Number(e.target.value) 
-                  })} 
-                  placeholder="Quantidade a remover"
-                />
+                {/* <div className="quantity-badge">
+                  {card.count} {/* Mostra a quantidade da carta
+                </div> */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                  <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUserCards((prev) => 
+                          prev.map((c) => {
+                            if (c.cardId === card.cardId && c.count > 0) {
+                              return { ...c, count: c.count - 1 };
+                            }
+                            return c;
+                          })
+                        );
+                      }}
+                      style={{
+                        padding: '5px 10px',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      -
+                    </button>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                      {card.count}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUserCards((prev) => 
+                          prev.map((c) => {
+                            if (c.cardId === card.cardId) {
+                              return { ...c, count: c.count + 1 };
+                            }
+                            return c;
+                          })
+                        );
+                      }}
+                      style={{
+                        padding: '5px 10px',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
               </div>
             ))
           )}
         </div>
       )}
 
-      <button onClick={handleRemoveCards} className="remove-cards-button" disabled={Object.keys(cardQuantities).length === 0}>
-        Remover Cartas Selecionadas
+      <button onClick={handleUpdateCards} className="remove-cards-button">
+        Atualizar Cartas
       </button>
-
-      <div className="pagination">
-        {Array.from({ length: Math.ceil(filteredCards.length / cardsPerPage) }, (_, index) => (
-          <button 
-            key={index + 1} 
-            onClick={() => handlePageChange(index + 1)}
-            className={currentPage === index + 1 ? 'active' : ''}
-            disabled={currentPage === index + 1}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

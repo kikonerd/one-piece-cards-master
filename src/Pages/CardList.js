@@ -68,7 +68,7 @@ function CardList() {
   const handleAddCards = async () => {
     const userId = auth.currentUser.uid;
     const selectedEntries = [...selectedCards.entries()];
-
+    console.log(selectedCards);
     try {
       toast.info("A adicionar cartas..."); // Notificação ao iniciar a adição
       for (const [cardId, quantity] of selectedEntries) {
@@ -87,7 +87,6 @@ function CardList() {
           });
         }
         else {
-
           await addDoc(collection(db, "userCards"), {
             userId: userId,
             cardId: cardId,

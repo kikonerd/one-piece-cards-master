@@ -66,6 +66,10 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    position: fixed;
+    left: 43%;
+    bottom: 10%;
+    font-size: 20px;
   }
   
   /* Efeito ao passar o mouse sobre o botão */

@@ -15,15 +15,6 @@
     margin-bottom: 20px;
   }
   
-  /* Estilo para o campo de busca */
-  .filter-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-  }
-  
   /* Estilo para a lista de cartas */
   .card-list {
     display: flex;
@@ -111,7 +102,7 @@
 
 
 /* src/Styles/Deck.css */
-.filter-input {
+.deck-filter-input {
   margin: 20px 0;
   padding: 10px;
   width: 100%; /* Ajuste a largura do campo de filtragem */

@@ -1,6 +1,6 @@
 import { faCheckSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDocs, increment, query, updateDoc, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -72,20 +72,32 @@ function CardList() {
     try {
       toast.info("A adicionar cartas..."); // Notificação ao iniciar a adição
       for (const [cardId, quantity] of selectedEntries) {
-        for (let i = 0; i < quantity; i++) {
-          await addDoc(collection(db, "cartas"), {
+        const q = query(
+          collection(db, "userCards"),
+          where("userId", "==", userId),
+          where("cardId", "==", cardId)
+        );
+  
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {  
+          const docRef = querySnapshot.docs[0].ref;
+          await updateDoc(docRef, {
+            count: increment(quantity),
+          });
+        }
+        else {
+
+          await addDoc(collection(db, "userCards"), {
             userId: userId,
             cardId: cardId,
-            name: cards.find(card => card.id === cardId).name,
-            timestamp: new Date()
+            count: quantity,
           });
         }
       }
       toast.success("Cartas adicionadas com sucesso!"); // Notificação de sucesso
-      console.log("Cartas adicionadas com sucesso!");
       setSelectedCards(new Map());
     } catch (error) {
-      console.error("Erro ao adicionar cartas:", error);
       toast.error("Erro ao adicionar cartas."); // Notificação de erro
     }
   };
@@ -104,7 +116,6 @@ function CardList() {
         className="filter-input"
       />
   
-
       {loading ? (
         <p>A carregar cartas...</p>
       ) : (
@@ -118,7 +129,7 @@ function CardList() {
                 key={card.id}
                 onClick={(e) => {
                   // Evitar que a seleção do card desmarque o campo de entrada
-                  if (e.target.tagName !== 'INPUT') {
+                  if (e.target.tagName !== 'BUTTON') {
                     toggleSelectCard(card.id);
                   }
                 }}
@@ -134,23 +145,63 @@ function CardList() {
                   alt={card.name}
                 />
                 <h2>{card.name}</h2>
-                <p style={{ color: 'green', fontWeight: 900 }}>{card.price !== "??" ? Number(card.price).toFixed(2) : card.price}€</p>
+                <p style={{ color: 'blue', fontWeight: 900 }}>
+                  {card.price !== "??" ? Number(card.price).toFixed(2) : card.price}€
+                </p>
                 <p>ID: {card.id}</p>
+
                 {selectedCards.has(card.id) && (
-                  <input
-                    type="number"
-                    min="1"
-                    value={selectedCards.get(card.id)}
-                    onChange={(e) => {
-                      const quantity = parseInt(e.target.value) || 1;
-                      setSelectedCards(prev => {
-                        const newSelection = new Map(prev);
-                        newSelection.set(card.id, quantity);
-                        return newSelection;
-                      });
-                    }}
-                    onClick={(e) => e.stopPropagation()} // Impede que o click no input desmarque o card
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCards((prev) => {
+                          const newSelection = new Map(prev);
+                          const currentQuantity = newSelection.get(card.id) || 1;
+                          if (currentQuantity > 1) {
+                            newSelection.set(card.id, currentQuantity - 1);
+                          }
+                          return newSelection;
+                        });
+                      }}
+                      style={{
+                        padding: '5px 10px',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      -
+                    </button>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                      {selectedCards.get(card.id) || 1}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCards((prev) => {
+                          const newSelection = new Map(prev);
+                          const currentQuantity = newSelection.get(card.id) || 1;
+                          newSelection.set(card.id, currentQuantity + 1);
+                          return newSelection;
+                        });
+                      }}
+                      style={{
+                        padding: '5px 10px',
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
                 )}
               </div>
             ))
@@ -158,7 +209,9 @@ function CardList() {
         </div>
       )}
 
-      <button onClick={handleAddCards} className="add-cards-button">Adicionar Cartas</button>
+      {selectedCards.size > 0 && (
+        <button onClick={handleAddCards} className="add-cards-button">Adicionar Cartas</button>
+      )}
 
       <div className="pagination">
         {Array.from({ length: Math.ceil(filteredCards.length / cardsPerPage) }, (_, index) => (

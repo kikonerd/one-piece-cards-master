@@ -1,10 +1,10 @@
+import { collection, deleteDoc, getDocs, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebase'; 
-import { collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'; 
-import { toast, ToastContainer } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { db } from '../firebase';
 
-function Dashboard({ userId }) {
+function UserCardList({ userId }) {
   const [userCards, setUserCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,7 +20,7 @@ function Dashboard({ userId }) {
 
   const fetchCards = async () => {
     try {
-      const q = query(collection(db, "cartas"), where("userId", "==", userId));
+      const q = query(collection(db, "userCards"), where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
       const fetchedCards = querySnapshot.docs.map(doc => doc.data());
       setUserCards(fetchedCards);
@@ -168,4 +168,4 @@ function Dashboard({ userId }) {
   );
 }
 
-export default Dashboard;
+export default UserCardList;

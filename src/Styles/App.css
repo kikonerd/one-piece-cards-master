@@ -11,14 +11,6 @@ body {
   background-repeat: no-repeat;
 }
 
-
-.filter-input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 300px; 
-}
-
 .button {
   margin-left: 10px; 
   padding: 10px 15px; 
@@ -101,13 +93,6 @@ body {
   font-size: 16px; /* Ajuste o tamanho da fonte conforme necessário */
   font-weight: bold; /* Texto em negrito */
   text-align: center; /* Centraliza o texto na caixa */
-}
-
-.filter-input {
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
 }
 
 .pagination {

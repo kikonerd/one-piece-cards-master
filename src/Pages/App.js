@@ -5,15 +5,15 @@ import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import CardList from './CardList';
-import Dashboard from './Dashboard';
 import Deck from './Deck';
 import FriendsList from './FriendsList';
 import LandingPage from './LandingPage';
 import NavBar from './NavBar';
+import UserCardList from './UserCardList';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [showDashboard, setShowDashboard] = useState(false);
+  const [showUserCardList, setShowUserCardList] = useState(false);
   const [showFriendsList, setShowFriendsList] = useState(false);
   const [nickname, setNickname] = useState(''); // Estado para armazenar o nickname
 
@@ -25,7 +25,7 @@ function App() {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             setNickname(userDoc.data().nickname);
-            setShowDashboard(false);
+            setShowUserCardList(false);
           } else {
             let nicknameInput = prompt("Insira seu nickname:");
             if (nicknameInput && nicknameInput.trim().length >= 3) {
@@ -37,20 +37,20 @@ function App() {
                   nickname: nicknameInput,
                 });
                 setNickname(nicknameInput);
-                setShowDashboard(true);
+                setShowUserCardList(true);
               } else {
                 alert("Este nickname já está em uso. Por favor, escolha outro.");
                 await auth.signOut();
                 setUser(null);
                 setNickname('');
-                setShowDashboard(false);
+                setShowUserCardList(false);
               }
             } else {
               alert("O nickname deve ter pelo menos 3 caracteres e não pode ser vazio.");
               await auth.signOut();
               setUser(null);
               setNickname('');
-              setShowDashboard(false);
+              setShowUserCardList(false);
             }
           }
         };
@@ -65,7 +65,7 @@ function App() {
 
   const handleLogout = () => {
     auth.signOut(); // Faz o logout do usuário
-    setShowDashboard(false); // Reseta o estado para mostrar a página de login
+    setShowUserCardList(false); // Reseta o estado para mostrar a página de login
     setShowFriendsList(false); // Reseta o estado para mostrar a página de login
   };
 
@@ -85,16 +85,16 @@ function App() {
       ) : (
         <>
           <NavBar 
-            setShowDashboard={setShowDashboard} 
+            setShowUserCardList={setShowUserCardList} 
             setShowFriendsList={setShowFriendsList} 
             onLogout={handleLogout} 
           />
-          <div className="welcome-message">
-            Bem-vindo, {nickname}
+          <div className="welcome-message" style={{marginLeft: '43px'}}>
+            <p style={{color: 'white', WebkitTextStrokeColor: 'black', WebkitTextStrokeWidth: '1.2px', fontSize: '30px', marginBottom: '5px'}}>Bem-vindo, {nickname}</p>
           </div>
           <Routes>
             <Route path="/deck/:friendId" element={<Deck />} />
-            <Route path="/" element={showFriendsList ? <FriendsList userId={user.uid} /> : showDashboard ? <Dashboard userId={user.uid} /> : <CardList />} />
+            <Route path="/" element={showFriendsList ? <FriendsList userId={user.uid} /> : showUserCardList ? <UserCardList userId={user.uid} /> : <CardList />} />
           </Routes>
         </>
       )}

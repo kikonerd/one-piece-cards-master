@@ -52,7 +52,7 @@ body {
 }
 
 .card-item p {
-  font-size: 12px; /* Tamanho da fonte para o ID */
+  font-size: 14px; /* Tamanho da fonte para o ID */
   margin: 5px 0; /* Margem para separar o ID do restante */
 }
 
@@ -120,15 +120,6 @@ button:hover {
   margin-bottom: 20px; /* Adiciona espaço abaixo do filtro */
 }
 
-.filter-input {
-  padding: 10px;
-  border: 1px solid #ccc; /* Borda do filtro */
-  border-radius: 5px;
-  font-weight: bold; /* Texto em negrito */
-  color: black; /* Cor do texto */
-  width: 300px; /* Ajuste a largura conforme necessário */
-}
-
 .card-item {
   background-color: #ffffff; /* Cor de fundo das cartas */
   border: 1px solid #ccc; /* Borda das cartas */
@@ -144,7 +135,7 @@ button:hover {
 
 .card-item.selected {
   border-color: green; /* Borda verde quando a carta está selecionada */
-  background-color: rgba(144, 238, 144, 0.3); /* Fundo destacado */
+  background-color: rgba(144, 238, 144, 0.6);
 }
 
 .select-box {
@@ -165,14 +156,20 @@ button:hover {
 .add-cards-button {
   background-color: #007bff; /* Cor do botão */
   color: white; /* Cor do texto */
-  border: none; /* Remove a borda */
   border-radius: 5px; /* Bordas arredondadas */
-  padding: 10px 15px; /* Preenchimento interno */
+  border-width: 4px;
+  border-style: solid;
+  border-color: dimgray;
+  padding: 15px 15px; /* Preenchimento interno */
   cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
   margin: 20px 0; /* Margem superior e inferior */
   display: block; /* Para centralizar */
   margin-left: auto; /* Para alinhar à esquerda */
   margin-right: auto; /* Para alinhar à direita */
+  position: fixed;
+  left: 43%;
+  bottom: 10%;
+  font-size: 20px;
 }
 
 .add-cards-button:hover {

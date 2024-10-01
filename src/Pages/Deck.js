@@ -83,7 +83,7 @@ const Deck = () => {
       <input 
         type="text" 
         placeholder="Filtrar cartas..." 
-        className="filter-input" 
+        className="deck-filter-input" 
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)} 
       />

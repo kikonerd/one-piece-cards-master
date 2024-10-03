@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { db } from '../firebase';
 import '../Styles/CardList.css';
 
-function FriendsList({userId}) {
+function FriendsList({userId, onViewDeck}) {
   const [friends, setFriends] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,8 +86,7 @@ function FriendsList({userId}) {
   };
 
   const handleViewDeck = (friendId) => {
-    // Redireciona para a página do deck do amigo
-    window.location.href = `/deck/${friendId}`; // Certifique-se de que isso corresponde à sua configuração de rotas
+    onViewDeck(friendId);
   };
 
   return (
@@ -186,6 +185,7 @@ function FriendsList({userId}) {
                                 color: '#333'
                             }}>{friend.friendNickname}</span>
                             <button onClick={() => handleViewDeck(friend.id)}>Ver Deck</button>
+                            {/* <Link to={`/frienddeck/${friend.id}`}>Ver Deck</Link> */}
                             <button
                                 style={{
                                     padding: '8px 12px',

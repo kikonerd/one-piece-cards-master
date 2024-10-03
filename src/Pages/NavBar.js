@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import '../Styles/NavBar.css'; // Certifique-se de que o arquivo CSS esteja atualizado
 
-function NavBar({ setShowUserCardList, setShowFriendsList,  onLogout }) {
+function NavBar({ setShowUserCardList, setShowFriendsList, setShowFriendDeck, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -13,6 +13,7 @@ function NavBar({ setShowUserCardList, setShowFriendsList,  onLogout }) {
     setMenuOpen(false); // Fecha o menu ao navegar
     setShowUserCardList(page === 'userCardList'); // Define se deve mostrar o a lista de cartas do user
     setShowFriendsList(page === 'friendsList'); // Define se deve mostrar a lista de amigos do user
+    setShowFriendDeck(false);
   };
 
   return (

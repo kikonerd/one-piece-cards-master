@@ -1,11 +1,11 @@
 import { faCheckSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { addDoc, collection, getDocs, increment, query, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, increment, query, updateDoc, where } from 'firebase/firestore'; // Importa as funções do Firestore
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { auth, db } from '../firebase';
 import '../Styles/CardList.css';
+import { auth, db } from '../firebase';
 
 function CardList() {
   const [cards, setCards] = useState([]);
@@ -18,8 +18,8 @@ function CardList() {
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const apiUrl = "https://us-central1-one-piece-cards-70035.cloudfunctions.net/apiProxy/cgfw/getcards?game=onepiece&mode=indexed";
-        const response = await fetch(`${apiUrl}`);
+        // const apiUrl = "https://us-central1-one-piece-cards-70035.cloudfunctions.net/apiProxy";
+        const response = await fetch(`/cgfw/getcards?game=onepiece&mode=indexed`);
         if (!response.ok) {
           throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
         }

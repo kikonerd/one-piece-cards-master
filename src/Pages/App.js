@@ -13,10 +13,12 @@ import UserCardList from './UserCardList';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [friendId, setFriendId] = useState(null);
   const [showUserCardList, setShowUserCardList] = useState(false);
   const [showFriendsList, setShowFriendsList] = useState(false);
+  const [showFriendDeck, setShowFriendDeck] = useState(false);
   const [nickname, setNickname] = useState(''); // Estado para armazenar o nickname
-
+  
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
@@ -67,6 +69,7 @@ function App() {
     auth.signOut(); // Faz o logout do usuário
     setShowUserCardList(false); // Reseta o estado para mostrar a página de login
     setShowFriendsList(false); // Reseta o estado para mostrar a página de login
+    setShowFriendDeck(false); // Reseta o estado para mostrar a página de login
   };
 
   const handleGoogleLogin = async () => {
@@ -78,6 +81,11 @@ function App() {
     }
   };
 
+  const handleViewDeck = (id) => {
+    setFriendId(id);
+    setShowFriendDeck(true);
+  };
+
   return (
     <div className="App">
       {!user ? (
@@ -87,14 +95,15 @@ function App() {
           <NavBar 
             setShowUserCardList={setShowUserCardList} 
             setShowFriendsList={setShowFriendsList} 
+            setShowFriendDeck={setShowFriendDeck} 
+            setShowFriendDeck={setShowFriendDeck} 
             onLogout={handleLogout} 
           />
           <div className="welcome-message" style={{marginLeft: '43px'}}>
             <p style={{color: 'white', WebkitTextStrokeColor: 'black', WebkitTextStrokeWidth: '1.2px', fontSize: '30px', marginBottom: '5px'}}>Bem-vindo, {nickname}</p>
           </div>
           <Routes>
-            <Route path="/deck/:friendId" element={<FriendDeck />} />
-            <Route path="/" element={showFriendsList ? <FriendsList userId={user.uid} /> : showUserCardList ? <UserCardList userId={user.uid} /> : <CardList />} />
+              <Route path="/" element={showFriendDeck ? <FriendDeck friendId={friendId}/> : showFriendsList ? <FriendsList userId={user.uid} onViewDeck={handleViewDeck} /> : showUserCardList ? <UserCardList userId={user.uid} /> : <CardList />} exact />
           </Routes>
         </>
       )}

@@ -18,12 +18,13 @@ function CardList() {
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const response = await fetch("/cgfw/getcards?game=onepiece&mode=indexed");
+        const apiUrl = "https://us-central1-one-piece-cards-70035.cloudfunctions.net/apiProxy/cgfw/getcards?game=onepiece&mode=indexed";
+        const response = await fetch(`${apiUrl}`);
         if (!response.ok) {
           throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
         }
         const data = await response.json();
-
+        console.log(data);
         if (data && data.data && Array.isArray(data.data)) {
           const formattedCards = data.data.map((card) => ({
             id: card[0],

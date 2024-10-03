@@ -20,8 +20,6 @@ const LandingPage = () => {
           nickname: nickname,
         });
       }
-
-      console.log("Usuário logado com sucesso!", user);
     } catch (error) {
       console.error("Erro ao fazer login com Google:", error);
     }

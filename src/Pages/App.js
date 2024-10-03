@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import CardList from './CardList';
-import Deck from './Deck';
+import FriendDeck from './FriendDeck';
 import FriendsList from './FriendsList';
 import LandingPage from './LandingPage';
 import NavBar from './NavBar';
@@ -37,7 +37,7 @@ function App() {
                   nickname: nicknameInput,
                 });
                 setNickname(nicknameInput);
-                setShowUserCardList(true);
+                setShowUserCardList(false);
               } else {
                 alert("Este nickname já está em uso. Por favor, escolha outro.");
                 await auth.signOut();
@@ -93,7 +93,7 @@ function App() {
             <p style={{color: 'white', WebkitTextStrokeColor: 'black', WebkitTextStrokeWidth: '1.2px', fontSize: '30px', marginBottom: '5px'}}>Bem-vindo, {nickname}</p>
           </div>
           <Routes>
-            <Route path="/deck/:friendId" element={<Deck />} />
+            <Route path="/deck/:friendId" element={<FriendDeck />} />
             <Route path="/" element={showFriendsList ? <FriendsList userId={user.uid} /> : showUserCardList ? <UserCardList userId={user.uid} /> : <CardList />} />
           </Routes>
         </>

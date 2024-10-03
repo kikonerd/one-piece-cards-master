@@ -14,6 +14,7 @@ import UserCardList from './UserCardList';
 function App() {
   const [user, setUser] = useState(null);
   const [friendId, setFriendId] = useState(null);
+  const [friendNickname, setFriendNickname] = useState(null);
   const [showUserCardList, setShowUserCardList] = useState(false);
   const [showFriendsList, setShowFriendsList] = useState(false);
   const [showFriendDeck, setShowFriendDeck] = useState(false);
@@ -81,8 +82,9 @@ function App() {
     }
   };
 
-  const handleViewDeck = (id) => {
+  const handleViewDeck = (id, friendNickname) => {
     setFriendId(id);
+    setFriendNickname(friendNickname);
     setShowFriendDeck(true);
   };
 
@@ -102,7 +104,7 @@ function App() {
             <p style={{color: 'white', WebkitTextStrokeColor: 'black', WebkitTextStrokeWidth: '1.2px', fontSize: '30px', marginBottom: '5px'}}>Bem-vindo, {nickname}</p>
           </div>
           <Routes>
-              <Route path="/" element={showFriendDeck ? <FriendDeck friendId={friendId}/> : showFriendsList ? <FriendsList userId={user.uid} onViewDeck={handleViewDeck} /> : showUserCardList ? <UserCardList userId={user.uid} /> : <CardList />} exact />
+              <Route path="/" element={showFriendDeck ? <FriendDeck friendId={friendId} friendNickname={friendNickname} /> : showFriendsList ? <FriendsList userId={user.uid} onViewDeck={handleViewDeck} /> : showUserCardList ? <UserCardList userId={user.uid} /> : <CardList />} exact />
           </Routes>
         </>
       )}

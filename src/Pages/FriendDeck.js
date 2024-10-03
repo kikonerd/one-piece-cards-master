@@ -4,7 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { db } from '../firebase';
 
-function FriendDeck({friendId}) {
+function FriendDeck({friendId, friendNickname}) {
   const [cards, setCards] = useState([]);
   const [friendCards, setFriendCards] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +34,6 @@ function FriendDeck({friendId}) {
 
   const fetchFriendCards = async () => {
     try {
-      // Fetching friend's cards from Firestore
-      console.log(friendId);
       const q = query(collection(db, "userCards"), where("userId", "==", friendId));
       const querySnapshot = await getDocs(q);
       const fetchedCards = querySnapshot.docs.map(doc => doc.data());
@@ -51,10 +49,26 @@ function FriendDeck({friendId}) {
     }
   };
 
+  const filteredCards = friendCards
+  .map(friendCard => {
+    // Find the card in the 'cards' array that corresponds to this friendCard
+    const matchingCard = cards.find(card => card.id === friendCard.cardId);
+
+    // Combine the friendCard data with the matching card's name (if found)
+    return {
+      ...friendCard,
+      name: matchingCard ? matchingCard.name : 'Nome não disponível', // Add name from matching card
+    };
+  })
+  .filter(card =>
+    card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    card.cardId.includes(searchTerm) // Filter by name or card ID
+  );
+
   return (
     <div>
       <ToastContainer />
-      <h1>Friend's Deck</h1>
+      <h1>Deck de {friendNickname}</h1>
       <input
         type="text"
         placeholder="Filter cards..."
@@ -67,12 +81,10 @@ function FriendDeck({friendId}) {
         <p>Loading cards...</p>
       ) : (
         <div className="card-list">
-          {friendCards.length === 0 ? (
+          {filteredCards.length === 0 ? (
             <p>No cards added by this friend.</p>
           ) : (
-            friendCards.filter(card => 
-              cards.find(c => c.id === card.cardId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
-            ).map((card) => (
+            filteredCards.map((card) => (
               <div className="card-item" key={card.cardId}>
                 <img
                   src={`https://static.dotgg.gg/onepiece/card/${card.cardId}.webp`}

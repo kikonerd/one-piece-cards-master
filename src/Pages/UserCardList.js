@@ -86,6 +86,22 @@ function UserCardList({ userId }) {
     }
   };
 
+  const filteredCards = userCards
+  .map(userCard => {
+    // Find the card in the 'cards' array that corresponds to this userCard
+    const matchingCard = cards.find(card => card.id === userCard.cardId);
+
+    // Combine the userCard data with the matching card's name (if found)
+    return {
+      ...userCard,
+      name: matchingCard ? matchingCard.name : 'Nome não disponível', // Add name from matching card
+    };
+  })
+  .filter(card =>
+    card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    card.cardId.includes(searchTerm) // Filter by name or card ID
+  );
+
   return (
     <div>
       <ToastContainer />
@@ -103,10 +119,10 @@ function UserCardList({ userId }) {
         <p>A carregar cartas...</p>
       ) : (
         <div className="card-list">
-          {userCards.length === 0 ? (
+          {filteredCards.length === 0 ? (
             <p>Nenhuma carta adicionada.</p>
           ) : (
-            userCards.map((card) => (
+            filteredCards.map((card) => (
               <div className="card-item" key={card.cardId}>
                 <img
                   src={`https://static.dotgg.gg/onepiece/card/${card.cardId}.webp`}

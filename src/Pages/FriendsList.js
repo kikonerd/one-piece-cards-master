@@ -85,8 +85,8 @@ function FriendsList({userId, onViewDeck}) {
     }
   };
 
-  const handleViewDeck = (friendId) => {
-    onViewDeck(friendId);
+  const handleViewDeck = (friendId, friendNickname) => {
+    onViewDeck(friendId, friendNickname);
   };
 
   return (
@@ -132,7 +132,7 @@ function FriendsList({userId, onViewDeck}) {
                         color: '#333'
                     }}>
                         {user.nickname}
-                        <button onClick={() => handleViewDeck(user.id)}>Ver Deck</button>
+                        <button onClick={() => handleViewDeck(user.id, user.nickname)}>Ver Deck</button>
                         <button
                                 style={{
                                     padding: '8px 12px',
@@ -184,8 +184,7 @@ function FriendsList({userId, onViewDeck}) {
                                 fontSize: '1.1em',
                                 color: '#333'
                             }}>{friend.friendNickname}</span>
-                            <button onClick={() => handleViewDeck(friend.friendId)}>Ver Deck</button>
-                            {/* <Link to={`/frienddeck/${friend.id}`}>Ver Deck</Link> */}
+                            <button onClick={() => handleViewDeck(friend.friendId, friend.friendNickname)}>Ver Deck</button>
                             <button
                                 style={{
                                     padding: '8px 12px',

@@ -96,7 +96,6 @@ function App() {
             setShowUserCardList={setShowUserCardList} 
             setShowFriendsList={setShowFriendsList} 
             setShowFriendDeck={setShowFriendDeck} 
-            setShowFriendDeck={setShowFriendDeck} 
             onLogout={handleLogout} 
           />
           <div className="welcome-message" style={{marginLeft: '43px'}}>

@@ -1,0 +1,132 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Toast Container */
+.Toastify__toast {
+  background: #333;
+  color: #fff;
+}
+
+/* Filter Input Styles */
+.filter-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+/* Card List Styles */
+.card-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: calc(33.33% - 20px); /* 3 cards per row with gap */
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.card-item:hover {
+  transform: scale(1.02);
+}
+
+/* Card Image */
+.card-item img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* Card Title and Price */
+.card-item h2 {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+.card-item p {
+  margin: 5px 0;
+}
+
+.card-item .price {
+  color: green;
+  font-weight: bold;
+}
+
+/* Button Styles */
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.add-cards-button {
+  background-color: #007bff; /* Blue */
+  margin-top: 20px;
+}
+
+.remove-cards-button {
+  background-color: #dc3545; /* Red */
+}
+
+/* Friend List Styles */
+.friend-list {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.friend-item:last-child {
+  border-bottom: none;
+}
+
+.friend-item span {
+  font-size: 1.1em;
+  color: #333;
+}
+
+.friend-item button {
+  background-color: #28a745; /* Green */
+}
+
+/* Centered Message Styles */
+.centered-message {
+  text-align: center;
+  color: #666;
+  margin: 20px 0;
+}

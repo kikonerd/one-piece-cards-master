@@ -16,31 +16,22 @@ function UserCardList({ userId }) {
       fetchCards(); 
     }
   }, [userId]);
-  
+
   const fetchAllCards = async () => {
     try {
-      const response = await fetch("/cgfw/getcards?game=onepiece&mode=indexed");
-      if (!response.ok) {
-        throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      if (data && data.data && Array.isArray(data.data)) {
-        const formattedCards = data.data.map((card) => ({
-          id: card[0],
-          id_normal: card[1],
-          name: card[4] || 'Nome não disponível',
-          price: card[16] || '??'
-        }));
-
-        setCards(formattedCards);
-      }
+      setLoading(true); // Set loading to true before fetching data
+      const q = query(collection(db, "cards")); // Query to get user-specific cards
+      const querySnapshot = await getDocs(q); // Fetch the documents from Firestore
+  
+      const fetchedCards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Get card data and include the document ID
+  
+      setCards(fetchedCards); // Set the state with fetched cards
     } catch (error) {
-      console.error("Erro ao buscar as cartas da API:", error);
+      console.error("Error fetching cards from Firestore:", error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Set loading to false after fetching
     }
-  };
+  }; 
 
   const fetchCards = async () => {
     try {
@@ -126,9 +117,6 @@ function UserCardList({ userId }) {
                   {cards.find((c) => c.id === card.cardId)?.price !== "??" ? Number(cards.find((c) => c.id === card.cardId)?.price).toFixed(2) : card.price}€
                 </p>
                 <p>ID: {card.cardId}</p>
-                {/* <div className="quantity-badge">
-                  {card.count} {/* Mostra a quantidade da carta
-                </div> */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
                   <button
                       onClick={(e) => {

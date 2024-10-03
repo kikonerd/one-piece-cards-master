@@ -10,6 +10,22 @@ function FriendDeck({friendId}) {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const fetchCards = async () => {
+    try {
+      setLoading(true); // Set loading to true before fetching data
+      const q = query(collection(db, "cards")); // Query to get user-specific cards
+      const querySnapshot = await getDocs(q); // Fetch the documents from Firestore
+  
+      const fetchedCards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Get card data and include the document ID
+  
+      setCards(fetchedCards); // Set the state with fetched cards
+    } catch (error) {
+      console.error("Error fetching cards from Firestore:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching
+    }
+  }; 
+
   useEffect(() => {
     if (friendId) {
       fetchFriendCards();
@@ -19,27 +35,14 @@ function FriendDeck({friendId}) {
   const fetchFriendCards = async () => {
     try {
       // Fetching friend's cards from Firestore
+      console.log(friendId);
       const q = query(collection(db, "userCards"), where("userId", "==", friendId));
       const querySnapshot = await getDocs(q);
       const fetchedCards = querySnapshot.docs.map(doc => doc.data());
       setFriendCards(fetchedCards);
       
-      // Fetching card details from the API
-      const response = await fetch("/cgfw/getcards?game=onepiece&mode=indexed");
-      if (!response.ok) {
-        throw new Error(`Error fetching cards: ${response.status} - ${response.statusText}`);
-      }
-      const data = await response.json();
+      fetchCards();
 
-      if (data && data.data && Array.isArray(data.data)) {
-        const formattedCards = data.data.map((card) => ({
-          id: card[0],
-          id_normal: card[1],
-          name: card[4] || 'Name not available',
-          price: card[16] || '??'
-        }));
-        setCards(formattedCards);
-      }
     } catch (error) {
       console.error("Error fetching friend cards:", error);
       toast.error("Failed to fetch friend's cards.");
@@ -82,6 +85,9 @@ function FriendDeck({friendId}) {
                     : card.price}€
                 </p>
                 <p>ID: {card.cardId}</p>
+                <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                      {card.count}
+                    </span>
               </div>
             ))
           )}

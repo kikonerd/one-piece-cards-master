@@ -184,7 +184,7 @@ function FriendsList({userId, onViewDeck}) {
                                 fontSize: '1.1em',
                                 color: '#333'
                             }}>{friend.friendNickname}</span>
-                            <button onClick={() => handleViewDeck(friend.id)}>Ver Deck</button>
+                            <button onClick={() => handleViewDeck(friend.friendId)}>Ver Deck</button>
                             {/* <Link to={`/frienddeck/${friend.id}`}>Ver Deck</Link> */}
                             <button
                                 style={{

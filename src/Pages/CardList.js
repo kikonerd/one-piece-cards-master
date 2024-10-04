@@ -1,4 +1,4 @@
-import { faCheckSquare } from '@fortawesome/free-solid-svg-icons';
+import { faCheckSquare, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { addDoc, collection, getDocs, increment, query, updateDoc, where } from 'firebase/firestore'; // Importa as funções do Firestore
 import React, { useEffect, useState } from 'react';
@@ -10,6 +10,8 @@ import { auth, db } from '../firebase';
 function CardList() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [modalImage, setModalImage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCards, setSelectedCards] = useState(new Map());
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,16 +23,16 @@ function CardList() {
         setLoading(true); // Set loading to true before fetching data
         const q = query(collection(db, "cards")); // Query to get user-specific cards
         const querySnapshot = await getDocs(q); // Fetch the documents from Firestore
-    
+
         const fetchedCards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Get card data and include the document ID
-    
+
         setCards(fetchedCards); // Set the state with fetched cards
       } catch (error) {
         console.error("Error fetching cards from Firestore:", error);
       } finally {
         setLoading(false); // Set loading to false after fetching
       }
-    }; 
+    };
 
     fetchCards();
   }, []);
@@ -68,10 +70,10 @@ function CardList() {
           where("userId", "==", userId),
           where("cardId", "==", cardId)
         );
-  
+
         const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {  
+
+        if (!querySnapshot.empty) {
           const docRef = querySnapshot.docs[0].ref;
           await updateDoc(docRef, {
             count: increment(quantity),
@@ -105,7 +107,7 @@ function CardList() {
         }}
         className="filter-input"
       />
-  
+
       {loading ? (
         <p>A carregar cartas...</p>
       ) : (
@@ -118,8 +120,7 @@ function CardList() {
                 className={`card-item ${selectedCards.has(card.id) ? 'selected' : ''}`}
                 key={card.id}
                 onClick={(e) => {
-                  // Evitar que a seleção do card desmarque o campo de entrada
-                  if (e.target.tagName !== 'BUTTON') {
+                  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') {
                     toggleSelectCard(card.id);
                   }
                 }}
@@ -139,6 +140,18 @@ function CardList() {
                   {card.price !== "??" ? Number(card.price).toFixed(2) : card.price}€
                 </p>
                 <p>ID: {card.id}</p>
+
+                {/* Magnifying Glass Icon */}
+                <div
+                  className="magnify-icon"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents selection on click
+                    setModalImage(`https://static.dotgg.gg/onepiece/card/${card.id}.webp`);
+                    setShowModal(true);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faSearch} /> {/* FontAwesome Magnifying Glass Icon */}
+                </div>
 
                 {selectedCards.has(card.id) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
@@ -193,7 +206,18 @@ function CardList() {
                     </button>
                   </div>
                 )}
+
+                {/* Modal for enlarged image */}
+                {showModal && (
+                  <div className="modal" onClick={() => setShowModal(false)}>
+                    <div className="modal-content">
+                      <span className="close" onClick={() => setShowModal(false)}>&times;</span>
+                      <img src={modalImage} alt="Enlarged Card" className="enlarged-card-image" />
+                    </div>
+                  </div>
+                )}
               </div>
+
             ))
           )}
         </div>

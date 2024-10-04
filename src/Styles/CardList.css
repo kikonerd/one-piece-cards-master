@@ -179,7 +179,7 @@ button:hover {
 /* Style for magnifying glass icon */
 .magnify-icon {
   position: absolute;
-  top: 10px;
+  bottom: 12%;
   right: 10px;
   cursor: pointer;
   font-size: 24px;

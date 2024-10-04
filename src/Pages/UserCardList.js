@@ -20,12 +20,26 @@ function UserCardList({ userId }) {
   const fetchAllCards = async () => {
     try {
       setLoading(true); // Set loading to true before fetching data
-      const q = query(collection(db, "cards")); // Query to get user-specific cards
-      const querySnapshot = await getDocs(q); // Fetch the documents from Firestore
-  
-      const fetchedCards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Get card data and include the document ID
-  
-      setCards(fetchedCards); // Set the state with fetched cards
+      const cachedCards = JSON.parse(localStorage.getItem('cards')); // Get cached cards
+      const cacheTimestamp = localStorage.getItem('cards-timestamp'); // Get cache timestamp
+    
+      const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    
+      // Check if cached data exists and is less than 24 hours old
+      if (cachedCards && cacheTimestamp && (Date.now() - cacheTimestamp) < oneDay) {
+        setCards(cachedCards); // Set the state with fetched cards
+      } else {
+        const q = query(collection(db, "cards"));
+        const querySnapshot = await getDocs(q); // Fetch data from Firestore
+    
+        const fetchedCards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+        // Store the fetched cards and current timestamp in localStorage
+        localStorage.setItem('cards', JSON.stringify(fetchedCards));
+        localStorage.setItem('cards-timestamp', Date.now());
+    
+        setCards(fetchedCards); // Set the state with fetched cards
+      }
     } catch (error) {
       console.error("Error fetching cards from Firestore:", error);
     } finally {

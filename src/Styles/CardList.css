@@ -232,3 +232,33 @@ button:hover {
   height: auto;
   border-radius: 5px;
 }
+
+
+.controls {
+  display: flex;
+  align-items: center; /* Alinha verticalmente */
+  justify-content: space-between; /* Distribui uniformemente */
+  margin-bottom: 20px; /* Espaçamento inferior */
+}
+
+.filter-input {
+  width: 300px; /* Definir largura da caixa de filtro */
+  padding: 8px;
+  font-size: 16px;
+  margin-right: 20px; /* Espaçamento entre a caixa de filtro e o dropdown */
+}
+
+.sorting-controls {
+  display: flex;
+  align-items: center;
+}
+
+.sorting-controls label {
+  margin-right: 10px;
+}
+
+.sorting-controls select {
+  padding: 5px;
+  font-size: 16px;
+  margin-right: 10px;
+}

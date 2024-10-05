@@ -1,6 +1,6 @@
 import { faCheckSquare, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { addDoc, collection, getDocs, increment, query, updateDoc, where } from 'firebase/firestore'; // Importa as funções do Firestore
+import { addDoc, collection, getDocs, increment, query, updateDoc, where } from 'firebase/firestore'; 
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,52 +15,66 @@ function CardList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCards, setSelectedCards] = useState(new Map());
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortCriteria, setSortCriteria] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
   const cardsPerPage = 36;
 
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        setLoading(true); // Set loading to true before fetching data
-        
-        const cachedCards = JSON.parse(localStorage.getItem('cards')); // Get cached cards
-        const cacheTimestamp = localStorage.getItem('cards-timestamp'); // Get cache timestamp
+        setLoading(true);
+        const cachedCards = JSON.parse(localStorage.getItem('cards'));
+        const cacheTimestamp = localStorage.getItem('cards-timestamp');
+        const oneDay = 24 * 60 * 60 * 1000;
       
-        const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-      
-        // Check if cached data exists and is less than 24 hours old
         if (cachedCards && cacheTimestamp && (Date.now() - cacheTimestamp) < oneDay) {
-          setCards(cachedCards); // Set the state with fetched cards
+          setCards(cachedCards);
         } else {
           const q = query(collection(db, "cards"));
-          const querySnapshot = await getDocs(q); // Fetch data from Firestore
-      
+          const querySnapshot = await getDocs(q);
           const fetchedCards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-          // Store the fetched cards and current timestamp in localStorage
           localStorage.setItem('cards', JSON.stringify(fetchedCards));
           localStorage.setItem('cards-timestamp', Date.now());
-      
-          setCards(fetchedCards); // Set the state with fetched cards
+          setCards(fetchedCards);
         }
-
       } catch (error) {
         console.error("Error fetching cards from Firestore:", error);
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false);
       }
     };
 
     fetchCards();
   }, []);
 
-  const filteredCards = cards.filter(card =>
+  const handleSortChange = (e) => {
+    setSortCriteria(e.target.value);
+  };
+
+  const handleSortOrderChange = (e) => {
+    setSortOrder(e.target.value);
+  };
+
+  const sortedCards = [...cards].sort((a, b) => {
+    let comparison = 0;
+    if (sortCriteria === 'id') {
+      comparison = a.id.localeCompare(b.id);
+    } else if (sortCriteria === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (sortCriteria === 'quantity') {
+      comparison = (a.quantity || 0) - (b.quantity || 0);
+    }
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+
+  const filteredCards = sortedCards.filter(card =>
     card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.id.includes(searchTerm) // Inclui filtro por ID
+    card.id.includes(searchTerm)
   );
 
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard); // Sem ordenação
+  const currentCards = filteredCards.slice(indexOfFirstCard, indexOfLastCard);
 
   const toggleSelectCard = (id) => {
     setSelectedCards(prev => {
@@ -68,7 +82,7 @@ function CardList() {
       if (newSelection.has(id)) {
         newSelection.delete(id);
       } else {
-        newSelection.set(id, 1); // Adiciona com contagem 1 se não estiver selecionada
+        newSelection.set(id, 1);
       }
       return newSelection;
     });
@@ -77,16 +91,14 @@ function CardList() {
   const handleAddCards = async () => {
     const userId = auth.currentUser.uid;
     const selectedEntries = [...selectedCards.entries()];
-    console.log(selectedCards);
     try {
-      toast.info("A adicionar cartas..."); // Notificação ao iniciar a adição
+      toast.info("A adicionar cartas...");
       for (const [cardId, quantity] of selectedEntries) {
         const q = query(
           collection(db, "userCards"),
           where("userId", "==", userId),
           where("cardId", "==", cardId)
         );
-
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
@@ -103,26 +115,45 @@ function CardList() {
           });
         }
       }
-      toast.success("Cartas adicionadas com sucesso!"); // Notificação de sucesso
+      toast.success("Cartas adicionadas com sucesso!");
       setSelectedCards(new Map());
     } catch (error) {
-      toast.error("Erro ao adicionar cartas."); // Notificação de erro
+      toast.error("Erro ao adicionar cartas.");
     }
   };
 
   return (
     <div>
-      <ToastContainer /> {/* Adicione isso para permitir que as notificações apareçam */}
-      <input
-        type="text"
-        placeholder="Filtrar cartas..."
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setCurrentPage(1);
-        }}
-        className="filter-input"
-      />
+      <ToastContainer />
+
+      <div className="controls">
+        <input
+          type="text"
+          placeholder="Filtrar cartas..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="filter-input"
+        />
+
+        <div className="sorting-controls">
+          <label htmlFor="sort">Ordenar por: </label>
+          <select id="sort" value={sortCriteria} onChange={handleSortChange}>
+            <option value="">Selecione</option>
+            <option value="id">ID</option>
+            <option value="name">Nome</option>
+            <option value="quantity">Quantidade</option>
+          </select>
+          
+          <label htmlFor="order">Ordem: </label>
+          <select id="order" value={sortOrder} onChange={handleSortOrderChange}>
+            <option value="asc">Crescente</option>
+            <option value="desc">Decrescente</option>
+          </select>
+        </div>
+      </div>
 
       {loading ? (
         <p>A carregar cartas...</p>
@@ -133,7 +164,7 @@ function CardList() {
           ) : (
             currentCards.map((card) => (
               <div
-                className={`card-item ${selectedCards.has(card.id) ? 'selected' : ''}`}
+                className={card-item ${selectedCards.has(card.id) ? 'selected' : ''}}
                 key={card.id}
                 onClick={(e) => {
                   if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') {
@@ -148,7 +179,7 @@ function CardList() {
                   )}
                 </div>
                 <img
-                  src={`https://static.dotgg.gg/onepiece/card/${card.id}.webp`}
+                  src={https://static.dotgg.gg/onepiece/card/${card.id}.webp}
                   alt={card.name}
                 />
                 <h2>{card.name}</h2>
@@ -157,16 +188,15 @@ function CardList() {
                 </p>
                 <p>ID: {card.id}</p>
 
-                {/* Magnifying Glass Icon */}
                 <div
                   className="magnify-icon"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevents selection on click
-                    setModalImage(`https://static.dotgg.gg/onepiece/card/${card.id}.webp`);
+                    e.stopPropagation();
+                    setModalImage(https://static.dotgg.gg/onepiece/card/${card.id}.webp);
                     setShowModal(true);
                   }}
                 >
-                  <FontAwesomeIcon icon={faSearch} /> {/* FontAwesome Magnifying Glass Icon */}
+                  <FontAwesomeIcon icon={faSearch} />
                 </div>
 
                 {selectedCards.has(card.id) && (
@@ -223,12 +253,26 @@ function CardList() {
                   </div>
                 )}
 
-                {/* Modal for enlarged image */}
                 {showModal && (
                   <div className="modal" onClick={() => setShowModal(false)}>
                     <div className="modal-content">
                       <span className="close" onClick={() => setShowModal(false)}>&times;</span>
                       <img src={modalImage} alt="Enlarged Card" className="enlarged-card-image" />
+                      <button 
+                        onClick={() => setShowModal(false)} 
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          backgroundColor: 'red',
+                          color: 'white',
+                          border: 'none',
+                          padding: '5px 10px',
+                          borderRadius: '5px',
+                          cursor: 'pointer'
+                        }}>
+                        X
+                      </button>
                     </div>
                   </div>
                 )}

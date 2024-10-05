@@ -9,6 +9,9 @@ function UserCardList({ userId }) {
   const [userCards, setUserCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortCriteria, setSortCriteria] = useState(''); // Critério de ordenação
+  const [sortOrder, setSortOrder] = useState('asc'); // Ordem de ordenação
+  const [totalValue, setTotalValue] = useState(0); // Armazenar o valor total do deck
 
   useEffect(() => {
     if (userId) {
@@ -17,35 +20,33 @@ function UserCardList({ userId }) {
     }
   }, [userId]);
 
+  useEffect(() => {
+    calculateTotalValue(); // Recalcular o valor total sempre que as cartas forem atualizadas
+  }, [userCards, cards]);
+
   const fetchAllCards = async () => {
     try {
-      setLoading(true); // Set loading to true before fetching data
-      const cachedCards = JSON.parse(localStorage.getItem('cards')); // Get cached cards
-      const cacheTimestamp = localStorage.getItem('cards-timestamp'); // Get cache timestamp
-    
-      const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    
-      // Check if cached data exists and is less than 24 hours old
+      setLoading(true);
+      const cachedCards = JSON.parse(localStorage.getItem('cards'));
+      const cacheTimestamp = localStorage.getItem('cards-timestamp');
+      const oneDay = 24 * 60 * 60 * 1000;
+
       if (cachedCards && cacheTimestamp && (Date.now() - cacheTimestamp) < oneDay) {
-        setCards(cachedCards); // Set the state with fetched cards
+        setCards(cachedCards);
       } else {
         const q = query(collection(db, "cards"));
-        const querySnapshot = await getDocs(q); // Fetch data from Firestore
-    
+        const querySnapshot = await getDocs(q);
         const fetchedCards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    
-        // Store the fetched cards and current timestamp in localStorage
         localStorage.setItem('cards', JSON.stringify(fetchedCards));
         localStorage.setItem('cards-timestamp', Date.now());
-    
-        setCards(fetchedCards); // Set the state with fetched cards
+        setCards(fetchedCards);
       }
     } catch (error) {
       console.error("Error fetching cards from Firestore:", error);
     } finally {
-      setLoading(false); // Set loading to false after fetching
+      setLoading(false);
     }
-  }; 
+  };
 
   const fetchCards = async () => {
     try {
@@ -60,10 +61,23 @@ function UserCardList({ userId }) {
     }
   };
 
+  // Função para calcular o valor total do deck
+  const calculateTotalValue = () => {
+    let total = 0;
+
+    userCards.forEach(userCard => {
+      const matchingCard = cards.find(card => card.id === userCard.cardId);
+      if (matchingCard && matchingCard.price !== "??") {
+        total += parseFloat(matchingCard.price) * userCard.count;
+      }
+    });
+
+    setTotalValue(total.toFixed(2));
+  };
+
   const handleUpdateCards = async () => {
     try {
-      toast.info("A atualizar cartas..."); // Notificação ao iniciar a remoção
-
+      toast.info("A atualizar cartas...");
       for (const card of userCards) {
         const q = query(
           collection(db, 'userCards'),
@@ -74,12 +88,12 @@ function UserCardList({ userId }) {
 
         const querySnapshot = await getDocs(q);
         
-        if (!querySnapshot.empty) {        
-          const doc = querySnapshot.docs[0];  // Get the first document
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
           const cardDocRef = doc.ref;
 
           if (card.count === 0) {
-            await deleteDoc(cardDocRef); 
+            await deleteDoc(cardDocRef); // Se a contagem for 0, remover a carta
           } else {
             await updateDoc(cardDocRef, {
               count: card.count,
@@ -88,55 +102,93 @@ function UserCardList({ userId }) {
         }
       }
 
-      toast.success("Cartas removidas com sucesso!"); // Notificação de sucesso
+      toast.success("Cartas atualizadas com sucesso!");
 
       // Atualiza a lista de cartas após 3 segundos
       setTimeout(() => {
-        fetchCards(); // Recarrega as cartas
+        fetchCards();
       }, 3000);
       
     } catch (error) {
-      console.error("Erro ao remover cartas:", error);
+      console.error("Erro ao atualizar cartas:", error);
     }
   };
 
-  const filteredCards = userCards
-  .map(userCard => {
-    // Find the card in the 'cards' array that corresponds to this userCard
-    const matchingCard = cards.find(card => card.id === userCard.cardId);
+  const handleSortChange = (e) => {
+    setSortCriteria(e.target.value);
+  };
 
-    // Combine the userCard data with the matching card's name (if found)
-    return {
-      ...userCard,
-      name: matchingCard ? matchingCard.name : 'Nome não disponível', // Add name from matching card
-    };
-  })
-  .filter(card =>
-    card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.cardId.includes(searchTerm) // Filter by name or card ID
-  );
+  const handleSortOrderChange = (e) => {
+    setSortOrder(e.target.value);
+  };
+
+  const sortedCards = userCards
+    .map(userCard => {
+      const matchingCard = cards.find(card => card.id === userCard.cardId);
+      return {
+        ...userCard,
+        name: matchingCard ? matchingCard.name : 'Nome não disponível',
+      };
+    })
+    .filter(card =>
+      card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.cardId.includes(searchTerm)
+    )
+    .sort((a, b) => {
+      let comparison = 0;
+      if (sortCriteria === 'id') {
+        comparison = a.cardId.localeCompare(b.cardId);
+      } else if (sortCriteria === 'name') {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortCriteria === 'quantity') {
+        comparison = a.count - b.count;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
 
   return (
     <div>
       <ToastContainer />
-      <input
-        type="text"
-        placeholder="Filtrar cartas..."
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-        }}
-        className="filter-input"
-      />
+
+      {/* Exibe o valor total do deck */}
+      <h2 style={{ color: 'white', marginLeft: '55px', textAlign: 'left' }}>
+        Valor total do deck: {totalValue}€
+      </h2>
+
+      <div className="controls" style={{ marginLeft: '15px' }}>
+        <input
+          type="text"
+          placeholder="Filtrar cartas..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="filter-input"
+        />
+
+        <div className="sorting-controls">
+          <label htmlFor="sort">Ordenar por: </label>
+          <select id="sort" value={sortCriteria} onChange={handleSortChange}>
+            <option value="">Selecione</option>
+            <option value="id">ID</option>
+            <option value="name">Nome</option>
+            <option value="quantity">Quantidade</option>
+          </select>
+
+          <label htmlFor="order">Ordem: </label>
+          <select id="order" value={sortOrder} onChange={handleSortOrderChange}>
+            <option value="asc">Crescente</option>
+            <option value="desc">Decrescente</option>
+          </select>
+        </div>
+      </div>
 
       {loading ? (
         <p>A carregar cartas...</p>
       ) : (
         <div className="card-list">
-          {filteredCards.length === 0 ? (
+          {sortedCards.length === 0 ? (
             <p>Nenhuma carta adicionada.</p>
           ) : (
-            filteredCards.map((card) => (
+            sortedCards.map((card) => (
               <div className="card-item" key={card.cardId}>
                 <img
                   src={`https://static.dotgg.gg/onepiece/card/${card.cardId}.webp`}
@@ -144,62 +196,64 @@ function UserCardList({ userId }) {
                 />
                 <h2>{cards.find((c) => c.id === card.cardId)?.name || 'Nome não disponível'}</h2>
                 <p style={{ color: 'blue', fontWeight: 900 }}>
-                  {cards.find((c) => c.id === card.cardId)?.price !== "??" ? Number(cards.find((c) => c.id === card.cardId)?.price).toFixed(2) : card.price}€
+                  {cards.find((c) => c.id === card.cardId)?.price !== "??" 
+                    ? Number(cards.find((c) => c.id === card.cardId)?.price).toFixed(2) 
+                    : card.price}€
                 </p>
                 <p>ID: {card.cardId}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
                   <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setUserCards((prev) => 
-                          prev.map((c) => {
-                            if (c.cardId === card.cardId && c.count > 0) {
-                              return { ...c, count: c.count - 1 };
-                            }
-                            return c;
-                          })
-                        );
-                      }}
-                      style={{
-                        padding: '5px 10px',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        backgroundColor: '#dc3545',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                      }}
-                    >
-                      -
-                    </button>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                      {card.count}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setUserCards((prev) => 
-                          prev.map((c) => {
-                            if (c.cardId === card.cardId) {
-                              return { ...c, count: c.count + 1 };
-                            }
-                            return c;
-                          })
-                        );
-                      }}
-                      style={{
-                        padding: '5px 10px',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                      }}
-                    >
-                      +
-                    </button>
-                  </div>
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUserCards((prev) => 
+                        prev.map((c) => {
+                          if (c.cardId === card.cardId && c.count > 0) {
+                            return { ...c, count: c.count - 1 };
+                          }
+                          return c;
+                        })
+                      );
+                    }}
+                    style={{
+                      padding: '5px 10px',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    -
+                  </button>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                    {card.count}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUserCards((prev) => 
+                        prev.map((c) => {
+                          if (c.cardId === card.cardId) {
+                            return { ...c, count: c.count + 1 };
+                          }
+                          return c;
+                        })
+                      );
+                    }}
+                    style={{
+                      padding: '5px 10px',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             ))
           )}
